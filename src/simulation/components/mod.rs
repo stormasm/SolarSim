@@ -14,33 +14,31 @@ use crate::simulation::components::speed::SpeedPlugin;
 use crate::simulation::integration::IntegrationPlugin;
 use bevy::app::Plugin;
 
+pub mod anise;
 pub mod apsis;
 pub mod billboard;
-pub mod camera;
-pub mod shape;
-pub mod direction;
-pub mod lock_on;
 pub mod body;
-pub mod motion_line;
-pub mod rotation;
-pub mod speed;
-pub mod selection;
-pub mod reset;
+pub mod camera;
+pub mod direction;
 pub mod editor;
 pub mod horizons;
+pub mod lock_on;
+pub mod motion_line;
+pub mod reset;
+pub mod rotation;
 pub mod scale;
-pub mod anise;
+pub mod selection;
+pub mod shape;
 mod spacecraft;
+pub mod speed;
 
 pub struct SimComponentPlugin;
 
 impl Plugin for SimComponentPlugin {
-
     fn build(&self, app: &mut bevy::prelude::App) {
-        app
-            .add_plugins(ApsisPlugin)
+        app.add_plugins(ApsisPlugin)
             .add_plugins(BodyBillboardPlugin)
-          //  .add_plugins(PanOrbitCameraPlugin)
+            //  .add_plugins(PanOrbitCameraPlugin)
             .add_plugins(DiameterPlugin)
             .add_plugins(DirectionPlugin)
             .add_plugins(IntegrationPlugin)
@@ -54,5 +52,4 @@ impl Plugin for SimComponentPlugin {
             .add_plugins(HorizonsPlugin)
             .add_plugins(AnisePlugin);
     }
-
 }

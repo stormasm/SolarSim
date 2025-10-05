@@ -1,6 +1,11 @@
-use crate::simulation::asset::serialization::{SerializedBody, SerializedLightSource, SimulationData};
+use crate::simulation::asset::serialization::{
+    SerializedBody, SerializedLightSource, SimulationData,
+};
 use crate::simulation::components::apsis::ApsisBody;
-use crate::simulation::components::body::{BodyBundle, BodyChildren, BodyParent, LightSource, Moon, OrbitSettings, Planet, SceneEntity, SceneHandle, Star};
+use crate::simulation::components::body::{
+    BodyBundle, BodyChildren, BodyParent, LightSource, Moon, OrbitSettings, Planet, SceneEntity,
+    SceneHandle, Star,
+};
 use crate::simulation::components::editor::CreateBodyType;
 use crate::simulation::components::scale::SimulationScale;
 use crate::simulation::components::selection::{SelectedEntity, SELECTION_MULTIPLIER};
@@ -14,7 +19,10 @@ use bevy::color::palettes::css::WHITE;
 use bevy::ecs::system::EntityCommands;
 use bevy::math::{DVec3, Vec3};
 use bevy::pbr::{MeshMaterial3d, PointLight};
-use bevy::prelude::{default, Assets, Circle, Color, Commands, Entity, Handle, Hsva, JustifyText, Mesh, Mesh3d, NextState, Query, Res, ResMut, Resource, Srgba, TextFont, Transform, Visibility};
+use bevy::prelude::{
+    default, Assets, Circle, Color, Commands, Entity, Handle, Hsva, JustifyText, Mesh, Mesh3d,
+    NextState, Query, Res, ResMut, Resource, Srgba, TextFont, Transform, Visibility,
+};
 use bevy::prelude::{ChildSpawnerCommands, Name};
 use bevy::scene::{Scene, SceneRoot};
 use bevy::text::{TextColor, TextLayout};
@@ -24,18 +32,15 @@ use std::collections::HashMap;
 
 #[derive(Resource, Default, Clone, Debug)]
 pub struct ScenarioData {
-
     pub starting_time_millis: i64,
     pub title: String,
     pub description: String,
     pub timestep: i32,
     pub scale: f32,
-    pub spice_files: HashMap<String, bool>
-
+    pub spice_files: HashMap<String, bool>,
 }
 
 impl From<SimulationData> for ScenarioData {
-
     fn from(value: SimulationData) -> Self {
         Self {
             starting_time_millis: value.starting_time_millis,
@@ -43,7 +48,7 @@ impl From<SimulationData> for ScenarioData {
             description: value.description,
             timestep: value.timestep,
             scale: value.scale,
-            spice_files: value.data_sets.iter().map(|d| (d.clone(), false)).collect()
+            spice_files: value.data_sets.iter().map(|d| (d.clone(), false)).collect(),
         }
     }
 }
@@ -60,7 +65,7 @@ pub fn setup_scenario(
     mut sun_materials: ResMut<Assets<SunImposterMaterial>>,
     mut sim_state: ResMut<NextState<SimState>>,
     scale: Res<SimulationScale>,
-    mut cam: Query<&mut PanOrbitCamera>
+    mut cam: Query<&mut PanOrbitCamera>,
 ) {
     if selected_scenario.spawned {
         return;
@@ -85,7 +90,7 @@ pub fn setup_scenario(
         0,
         &mut stars,
         None,
-        &mut total_count
+        &mut total_count,
     );
     if selected_entity.entity.is_none() {
         if let Some(star) = stars.first() {
@@ -100,7 +105,9 @@ pub fn setup_scenario(
     } else {
         let mut cam = cam.single_mut().unwrap();
         let star = data.bodies.first().unwrap();
-        cam.target_radius = scale.m_to_unit_32(star.data.ellipsoid.mean_equatorial_radius_km() as f32 * 2000. * SELECTION_MULTIPLIER);
+        cam.target_radius = scale.m_to_unit_32(
+            star.data.ellipsoid.mean_equatorial_radius_km() as f32 * 2000. * SELECTION_MULTIPLIER,
+        );
     }
 }
 
@@ -114,7 +121,7 @@ pub fn recursive_bodies(
     current_depth: usize,
     parent_children: &mut Vec<Entity>,
     parent: Option<Entity>,
-    count: &mut i32
+    count: &mut i32,
 ) {
     let total_count = bodies.iter().count();
     *count += total_count as i32;
@@ -122,7 +129,9 @@ pub fn recursive_bodies(
         if !serialized_body.data.simulate {
             continue;
         }
-        let id = commands.spawn((Visibility::default(), Transform::default())).id();
+        let id = commands
+            .spawn((Visibility::default(), Transform::default()))
+            .id();
 
         //planets vector for adding BodyChildren later
         let mut children: Vec<Entity> = vec![];
@@ -131,18 +140,49 @@ pub fn recursive_bodies(
 
         if !serialized_body.children.is_empty() {
             let mut sorted_children = serialized_body.children.iter().collect::<Vec<_>>();
-            sort_bodies(&mut sorted_children, -DVec3::from(serialized_body.clone().data.starting_position));
-            recursive_bodies(sorted_children, commands, &scale, &assets, &mut meshes, &mut sun_materials, current_depth + 1, &mut children, Some(id), count);
+            sort_bodies(
+                &mut sorted_children,
+                -DVec3::from(serialized_body.clone().data.starting_position),
+            );
+            recursive_bodies(
+                sorted_children,
+                commands,
+                &scale,
+                &assets,
+                &mut meshes,
+                &mut sun_materials,
+                current_depth + 1,
+                &mut children,
+                Some(id),
+                count,
+            );
         }
         let mut body = commands.entity(id);
         //The initial star color will be for the actual light source, if it exists
         let mut star_color = WHITE.into();
         if let Some(source) = &serialized_body.data.light_source {
-            add_light_source(&mut body, source, &mut star_color, serialized_body, &scale, id);
+            add_light_source(
+                &mut body,
+                source,
+                &mut star_color,
+                serialized_body,
+                &scale,
+                id,
+            );
             //This star color is for the imposter billboard
             star_color = Srgba::hex(&source.imposter_color).unwrap().into();
         }
-        apply_body(BodyBundle::from_serialized(serialized_body.clone()), CreateBodyType::from_depth(current_depth), &assets, &mut body, &mut meshes, &mut sun_materials, calculate_hue(index as f32, total_count as f32), star_color, &scale);
+        apply_body(
+            BodyBundle::from_serialized(serialized_body.clone()),
+            CreateBodyType::from_depth(current_depth),
+            &assets,
+            &mut body,
+            &mut meshes,
+            &mut sun_materials,
+            calculate_hue(index as f32, total_count as f32),
+            star_color,
+            &scale,
+        );
 
         body.insert(BodyChildren(children));
         if let Some(parent) = parent {
@@ -157,34 +197,33 @@ fn add_light_source(
     star_color: &mut Color,
     entry: &SerializedBody,
     scale: &SimulationScale,
-    id: Entity
+    id: Entity,
 ) {
     entity.with_children(|parent| {
         *star_color = Srgba::hex(&source.color).unwrap().into();
-        parent.spawn(PointLight {
-            color: *star_color,
-            intensity: scale_lumen(source.intensity, &scale),
-            shadows_enabled: true,
-            range: scale.m_to_unit_32(source.range),
-            radius: scale.m_to_unit_32(entry.data.ellipsoid.mean_equatorial_radius_km() as f32),
-            ..default()
-        })
-            .insert(if source.enabled { Visibility::Visible } else { Visibility::Hidden })
+        parent
+            .spawn(PointLight {
+                color: *star_color,
+                intensity: scale_lumen(source.intensity, &scale),
+                shadows_enabled: true,
+                range: scale.m_to_unit_32(source.range),
+                radius: scale.m_to_unit_32(entry.data.ellipsoid.mean_equatorial_radius_km() as f32),
+                ..default()
+            })
+            .insert(if source.enabled {
+                Visibility::Visible
+            } else {
+                Visibility::Hidden
+            })
             .insert(LightSource::new(id, source));
     });
 }
 
-pub fn calculate_hue(
-    index: f32,
-    total: f32
-) -> f32 {
-    360.0 * ((index + 1.) / total )
+pub fn calculate_hue(index: f32, total: f32) -> f32 {
+    360.0 * ((index + 1.) / total)
 }
 
-fn sort_bodies(
-    bodies: &mut Vec<&SerializedBody>,
-    offset: DVec3,
-) {
+fn sort_bodies(bodies: &mut Vec<&SerializedBody>, offset: DVec3) {
     bodies.sort_by(|body1, body2| {
         let pos1 = DVec3::from(body1.data.starting_position) + offset;
         let pos2 = DVec3::from(body2.data.starting_position) + offset;
@@ -201,7 +240,7 @@ pub fn apply_body(
     sun_shader_materials: &mut ResMut<Assets<SunImposterMaterial>>,
     hue: f32,
     star_color: Color,
-    scale: &SimulationScale
+    scale: &SimulationScale,
 ) {
     let asset_handle: Handle<Scene> = assets.load(bundle.model_path.clone().0);
     let color: Color = Hsva::new(hue, 1.0, 1.0, 1.0).into();
@@ -214,33 +253,23 @@ pub fn apply_body(
             entity.insert(Planet);
         }
         CreateBodyType::Star => {
-            entity.insert(Star {
-                use_imposter: true,
-            });
+            entity.insert(Star { use_imposter: true });
         }
     }
-    entity.insert(OrbitSettings {
-        color,
-        ..default()
-    });
+    entity.insert(OrbitSettings { color, ..default() });
     if body_type != CreateBodyType::Star {
         entity.insert(ApsisBody::default());
     }
     let mut scene_entity_id = None;
     let id = &entity.id();
     entity.with_children(|parent| {
-
         scene_entity_id = Some(spawn_scene(
             asset_handle.clone(),
             bundle.clone().name.as_str(),
             parent,
         ));
 
-        spawn_billboard(
-            bundle.clone(),
-            color.into(),
-            parent
-        );
+        spawn_billboard(bundle.clone(), color.into(), parent);
 
         if body_type == CreateBodyType::Star {
             spawn_imposter(
@@ -250,7 +279,8 @@ pub fn apply_body(
                 star_color.into(),
                 *id,
                 &scale,
-                sun_shader_materials);
+                sun_shader_materials,
+            );
         }
     });
     entity.insert(SceneHandle(asset_handle.clone(), scene_entity_id.unwrap()));
@@ -266,30 +296,31 @@ fn spawn_imposter(
     shader_material: &mut ResMut<Assets<SunImposterMaterial>>,
 ) {
     let color: Color = Srgba::rgb(color.red * 20., color.green * 20., color.blue * 20.).into();
-    parent.spawn(Mesh3d(meshes.add(Circle::new(scale.m_to_unit_32(bundle.diameter.ellipsoid.mean_equatorial_radius_km() as f32 * 6000.)))))
-        .insert(MeshMaterial3d(shader_material.add(SunImposterMaterial::with(color.into(), scale.m_to_unit_32(bundle.diameter.ellipsoid.mean_equatorial_radius_km() as f32)))))
+    parent
+        .spawn(Mesh3d(meshes.add(Circle::new(scale.m_to_unit_32(
+            bundle.diameter.ellipsoid.mean_equatorial_radius_km() as f32 * 6000.,
+        )))))
+        .insert(MeshMaterial3d(shader_material.add(
+            SunImposterMaterial::with(
+                color.into(),
+                scale.m_to_unit_32(bundle.diameter.ellipsoid.mean_equatorial_radius_km() as f32),
+            ),
+        )))
         .insert(Visibility::Hidden)
         .insert(StarBillboard(parent_id))
         .insert(Name::new(format!("{} Imposter Billboard", bundle.name)));
 }
 
-
-fn spawn_billboard(
-    bundle: BodyBundle,
-    color: Color,
-    parent: &mut ChildSpawnerCommands
-) {
-    parent.spawn(
-        (
+fn spawn_billboard(bundle: BodyBundle, color: Color, parent: &mut ChildSpawnerCommands) {
+    parent
+        .spawn((
             BillboardText::from(bundle.name.as_str()),
             Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
             Visibility::Visible,
             TextLayout::new_with_justify(JustifyText::Center),
             TextFont::from_font_size(60.0),
-            TextColor(color)
-        )
-
-    )
+            TextColor(color),
+        ))
         .insert(Name::new(format!("{} Text Billboard", bundle.name)));
 }
 
@@ -298,7 +329,9 @@ pub fn spawn_scene(
     name: &str,
     parent: &mut ChildSpawnerCommands,
 ) -> Entity {
-    parent.spawn(SceneRoot::from(asset_handle))
+    parent
+        .spawn(SceneRoot::from(asset_handle))
         .insert(SceneEntity)
-        .insert(Name::new(format!("{} Scene", name))).id()
+        .insert(Name::new(format!("{} Scene", name)))
+        .id()
 }

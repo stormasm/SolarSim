@@ -12,7 +12,10 @@ use crate::utils::sim_state_type_editor;
 use bevy::app::{App, Plugin};
 use bevy::color::palettes::css::WHITE;
 use bevy::ecs::system::SystemId;
-use bevy::prelude::{AssetServer, Assets, Commands, Entity, FromWorld, IntoScheduleConfigs, Local, Mesh, OnEnter, Query, Res, ResMut, Resource, Transform, Update, Vec3, Visibility, World};
+use bevy::prelude::{
+    AssetServer, Assets, Commands, Entity, FromWorld, IntoScheduleConfigs, Local, Mesh, OnEnter,
+    Query, Res, ResMut, Resource, Transform, Update, Vec3, Visibility, World,
+};
 use std::collections::HashMap;
 
 #[non_exhaustive]
@@ -41,19 +44,17 @@ pub enum CreateBodyType {
     #[default]
     Moon,
     Planet,
-    Star
+    Star,
 }
 
 impl CreateBodyType {
-
     pub fn from_depth(depth: usize) -> Self {
         match depth {
             0 => CreateBodyType::Star,
             1 => CreateBodyType::Planet,
-            _ => CreateBodyType::Moon
+            _ => CreateBodyType::Moon,
         }
     }
-
 }
 
 impl FromWorld for EditorSystems {
@@ -62,32 +63,32 @@ impl FromWorld for EditorSystems {
 
         systems.0.insert(
             EditorSystemType::UPDATE_POSITIONS.into(),
-            world.register_system(update_body_positions)
+            world.register_system(update_body_positions),
         );
 
         systems.0.insert(
             EditorSystemType::UPDATE_DIAMETER.into(),
-            world.register_system(apply_real_diameter)
+            world.register_system(apply_real_diameter),
         );
 
         systems.0.insert(
             EditorSystemType::UPDATE_TILT.into(),
-            world.register_system(initial_rotation)
+            world.register_system(initial_rotation),
         );
 
         systems.0.insert(
             EditorSystemType::CREATE_BODY.into(),
-            world.register_system(create_empty_body)
+            world.register_system(create_empty_body),
         );
 
         systems.0.insert(
             EditorSystemType::SAVE_SCENARIO.into(),
-            world.register_system(save_scenario)
+            world.register_system(save_scenario),
         );
 
         systems.0.insert(
             EditorSystemType::RETRIEVE_DATA.into(),
-            world.register_system(retrieve_starting_data)
+            world.register_system(retrieve_starting_data),
         );
 
         systems
@@ -97,7 +98,6 @@ impl FromWorld for EditorSystems {
 pub struct EditorPlugin;
 
 impl Plugin for EditorPlugin {
-
     fn build(&self, app: &mut App) {
         app
             .init_resource::<CreateBodyState>()
@@ -107,7 +107,6 @@ impl Plugin for EditorPlugin {
         //      .init_state::<crate::simulation::SimState>()
         ;
     }
-
 }
 
 fn create_empty_body(
@@ -119,7 +118,7 @@ fn create_empty_body(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<SunImposterMaterial>>,
     mut index: Local<i32>,
-    scale: Res<SimulationScale>
+    scale: Res<SimulationScale>,
 ) {
     let mut entity_commands = commands.spawn((Transform::default(), Visibility::default()));
     apply_body(
@@ -131,14 +130,18 @@ fn create_empty_body(
         &mut materials,
         0.0,
         WHITE.into(),
-        &scale
+        &scale,
     );
     if create_body_state.body_type != CreateBodyType::Moon {
         entity_commands.insert(BodyChildren(Vec::new()));
     }
     if let Some(parent) = create_body_state.parent {
         entity_commands.insert(BodyParent(parent));
-        parent_query.get_mut(parent).unwrap().0.push(entity_commands.id());
+        parent_query
+            .get_mut(parent)
+            .unwrap()
+            .0
+            .push(entity_commands.id());
     }
     selected_entity.entity = Some(entity_commands.id());
     create_body_state.parent = None;
@@ -149,7 +152,7 @@ fn selection_listener(
     selected_entity: Res<SelectedEntity>,
     mut local_selected_entity: Local<SelectedEntity>,
     mut commands: Commands,
-    systems: Res<EditorSystems>
+    systems: Res<EditorSystems>,
 ) {
     if local_selected_entity.entity.is_none() {
         local_selected_entity.entity = selected_entity.entity;
@@ -168,7 +171,7 @@ fn selection_listener(
 pub fn update_body_positions(
     mut bodies: Query<(Entity, &SimPosition, &mut Transform)>,
     selected_entity: Res<SelectedEntity>,
-    scale: Res<SimulationScale>
+    scale: Res<SimulationScale>,
 ) {
     let offset = if let Some(entity) = selected_entity.entity {
         if let Err(_) = bodies.get(entity) {

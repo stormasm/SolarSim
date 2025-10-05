@@ -6,10 +6,7 @@ use bevy::prelude::{default, Camera, Camera3d, Commands, PerspectiveProjection, 
 use bevy::render::view::NoCpuCulling;
 use bevy_panorbit_camera::PanOrbitCamera;
 
-pub fn setup_camera(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
+pub fn setup_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
     let skybox_handle = asset_server.load("textures/skybox.png");
     commands.spawn((
         Camera3d::default(),
@@ -34,7 +31,7 @@ pub fn setup_camera(
             intensity: 0.3, // the default is 0.3,
             ..default()
         },
-        NoCpuCulling
+        NoCpuCulling,
     ));
 
     commands.insert_resource(Cubemap {

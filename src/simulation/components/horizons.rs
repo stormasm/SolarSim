@@ -15,8 +15,7 @@ pub struct HorizonsPlugin;
 
 impl Plugin for HorizonsPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app
-            .init_resource::<HorizonsClient>();
+        app.init_resource::<HorizonsClient>();
     }
 }
 
@@ -31,36 +30,29 @@ impl Default for HorizonsClient {
 
 #[derive(Component, Clone, Debug)]
 pub struct AniseMetadata {
-
     pub ephemeris_id: i32,
     //For constants and rotation
     pub target_id: i32,
     pub orientation_id: i32,
-
 }
 
 impl Default for AniseMetadata {
-
     fn default() -> Self {
         Self {
             ephemeris_id: -1,
             orientation_id: -1,
-            target_id: -1
+            target_id: -1,
         }
     }
-
 }
 
 const HORIZONS_API_URL: &'static str = "https://ssd.jpl.nasa.gov/api/horizons.api?format=text";
 
 pub struct HorizonsApiParameters {
-
-    params: HashMap<String, String>
-
+    params: HashMap<String, String>,
 }
 
 impl HorizonsApiParameters {
-
     pub fn with_defaults() -> Self {
         let mut params = HashMap::new();
         params.insert("CENTER".to_string(), "500@0".to_string()); //Solar System Barycenter
@@ -71,17 +63,20 @@ impl HorizonsApiParameters {
     }
 
     pub fn with_command(mut self, command: i32) -> Self {
-        self.params.insert("COMMAND".to_string(), command.to_string());
+        self.params
+            .insert("COMMAND".to_string(), command.to_string());
         self
     }
 
     pub fn with_start_time(mut self, start_time: &str) -> Self {
-        self.params.insert("START_TIME".to_string(), start_time.to_string());
+        self.params
+            .insert("START_TIME".to_string(), start_time.to_string());
         self
     }
 
     pub fn with_stop_time(mut self, stop_time: &str) -> Self {
-        self.params.insert("STOP_TIME".to_string(), stop_time.to_string());
+        self.params
+            .insert("STOP_TIME".to_string(), stop_time.to_string());
         self
     }
 
@@ -89,12 +84,11 @@ impl HorizonsApiParameters {
         self.params.insert("CENTER".to_string(), center.to_string());
         self
     }
-
 }
 
 pub fn get_starting_data_horizons(
     parameters: HorizonsApiParameters,
-    client: Client
+    client: Client,
 ) -> Result<(SerializedVec, SerializedVec), Box<dyn Error>> {
     let mut builder = client.get(HORIZONS_API_URL);
 
@@ -149,12 +143,16 @@ pub fn retrieve_starting_data_horizons(
     client: Res<HorizonsClient>,
     mut state: ResMut<EditorPanelState>,
     scenario: Res<ScenarioData>,
-    mut toasts: ResMut<ToastContainer>
+    mut toasts: ResMut<ToastContainer>,
 ) {
     if let Some(entity) = selected_entity.entity {
-        let starting_date = DateTime::from_timestamp_millis(scenario.starting_time_millis).unwrap().date_naive();
+        let starting_date = DateTime::from_timestamp_millis(scenario.starting_time_millis)
+            .unwrap()
+            .date_naive();
         let start_date = starting_date.format("%Y-%m-%d").to_string();
-        let stop_date = (starting_date + chrono::Duration::days(1)).format("%Y-%m-%d").to_string();
+        let stop_date = (starting_date + chrono::Duration::days(1))
+            .format("%Y-%m-%d")
+            .to_string();
         let id = bodies.get(entity).unwrap();
         let parameters = HorizonsApiParameters::with_defaults()
             .with_command(id.ephemeris_id)
@@ -165,7 +163,9 @@ pub fn retrieve_starting_data_horizons(
             state.new_velocity = DVec3::from(vel);
             toasts.0.add(success_toast("Horizons data retrieved"));
         } else {
-            toasts.0.add(error_toast("Failed to retrieve Horizons data. Check the Horizons Id and try again."));
+            toasts.0.add(error_toast(
+                "Failed to retrieve Horizons data. Check the Horizons Id and try again.",
+            ));
         }
     }
 }

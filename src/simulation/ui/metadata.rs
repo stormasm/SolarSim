@@ -22,23 +22,21 @@ use std::task::Poll;
 pub struct MetadataPlugin;
 
 impl Plugin for MetadataPlugin {
-
     fn build(&self, app: &mut App) {
-        app
-            .init_resource::<MetadataUiState>()
-            .add_systems(EguiContextPass, metadata_editor.run_if(sim_state_type_editor));
+        app.init_resource::<MetadataUiState>().add_systems(
+            EguiContextPass,
+            metadata_editor.run_if(sim_state_type_editor),
+        );
     }
 }
 
 #[derive(Default, Resource)]
 pub struct MetadataUiState {
-
     pub show: bool,
     pub selected_spk_file: String,
     pub new_spk_file: String,
     pub update_bodies_amount: i32,
-    pub update_bodies_total: i32
-
+    pub update_bodies_total: i32,
 }
 
 fn metadata_editor(
@@ -51,7 +49,7 @@ fn metadata_editor(
     mut almanac_holder: ResMut<AlmanacHolder>,
     mut task_executor: TaskRunner<Result<(Almanac, String), String>>,
     mut loading_state: ResMut<LoadingState>,
-    mut loading: Local<bool>
+    mut loading: Local<bool>,
 ) {
     let mut show = state.show;
     let mut selected_spk_file = state.selected_spk_file.clone();
@@ -68,7 +66,17 @@ fn metadata_editor(
             edit_basic_info(ui, &mut scenario_data);
             edit_starting_time(ui, &mut scenario_data);
             edit_simulation_settings(ui, &mut scale, &mut speed);
-            edit_spk_files(ui, &mut scenario_data, &mut selected_spk_file, &mut new_spk_file, &mut toasts, &mut almanac_holder, &mut task_executor, &mut loading_state, &mut loading);
+            edit_spk_files(
+                ui,
+                &mut scenario_data,
+                &mut selected_spk_file,
+                &mut new_spk_file,
+                &mut toasts,
+                &mut almanac_holder,
+                &mut task_executor,
+                &mut loading_state,
+                &mut loading,
+            );
         });
 
     state.show = show;
@@ -93,9 +101,11 @@ fn edit_starting_time(ui: &mut egui::Ui, scenario_data: &mut ScenarioData) {
     ui.horizontal(|ui| {
         ui.label("Starting Date");
         ui.add(DatePickerButton::new(&mut new_date));
-        if ui.button("Update bodies (TODO)").on_hover_text("Update bodies to new date").clicked() {
-
-        }
+        if ui
+            .button("Update bodies (TODO)")
+            .on_hover_text("Update bodies to new date")
+            .clicked()
+        {}
     });
     let mut hour = current_date.time().hour();
     let mut minute = current_date.time().minute();
@@ -121,7 +131,8 @@ fn edit_simulation_settings(ui: &mut egui::Ui, scale: &mut SimulationScale, spee
         ui.label(format!("({}/step)", format_seconds(speed.0)));
     });
     ui.horizontal(|ui| {
-        ui.label("Simulation Scale").on_hover_text("Only applied on simulation start");
+        ui.label("Simulation Scale")
+            .on_hover_text("Only applied on simulation start");
         ui.add(egui::DragValue::new(&mut scale.0).min_decimals(20));
     });
     ui.label(format!("(1m = {} units)", 1. / scale.0));
@@ -136,7 +147,7 @@ fn edit_spk_files(
     almanac_holder: &mut AlmanacHolder,
     task_executor: &mut TaskRunner<Result<(Almanac, String), String>>,
     loading_state: &mut ResMut<LoadingState>,
-    loading: &mut bool
+    loading: &mut bool,
 ) {
     if !task_executor.is_idle() {
         match task_executor.poll() {
@@ -152,7 +163,9 @@ fn edit_spk_files(
                         toasts.0.add(success_toast("SPICE file loaded"));
                     }
                     Err(e) => {
-                        toasts.0.add(error_toast(format!("Couldn't load SPICE file: {}", e).as_str()));
+                        toasts.0.add(error_toast(
+                            format!("Couldn't load SPICE file: {}", e).as_str(),
+                        ));
                     }
                 }
             }
@@ -165,14 +178,31 @@ fn edit_spk_files(
             selected = "None".to_string();
         }
         ui.label("Added SPICE Files:");
-        ComboBox::from_label("").selected_text(selected).show_ui(ui, |ui| {
-            for (path, loaded) in scenario_data.spice_files.clone() {
-                if ui.selectable_value(selected_spice_file, path.clone(), format!("{} ({})", path, if loaded { "Loaded" } else { "Not Loaded" })).clicked() {
-                    *new_spice_file = selected_spice_file.clone();
+        ComboBox::from_label("")
+            .selected_text(selected)
+            .show_ui(ui, |ui| {
+                for (path, loaded) in scenario_data.spice_files.clone() {
+                    if ui
+                        .selectable_value(
+                            selected_spice_file,
+                            path.clone(),
+                            format!(
+                                "{} ({})",
+                                path,
+                                if loaded { "Loaded" } else { "Not Loaded" }
+                            ),
+                        )
+                        .clicked()
+                    {
+                        *new_spice_file = selected_spice_file.clone();
+                    }
                 }
-            }
-        });
-        if ui.button("Remove").on_hover_text("Remove selected SPICE file").clicked() {
+            });
+        if ui
+            .button("Remove")
+            .on_hover_text("Remove selected SPICE file")
+            .clicked()
+        {
             scenario_data.spice_files.remove(selected_spice_file);
             *selected_spice_file = "".to_string();
             toasts.0.add(success_toast("SPICE file removed"));
@@ -182,21 +212,34 @@ fn edit_spk_files(
     ui.text_edit_singleline(new_spice_file);
     ui.horizontal(|ui| {
         if ui.button("Select SPICE File").clicked() {
-            match tinyfiledialogs::open_file_dialog("Select SPICE file", "data.bsp", Some((&["*.bsp", "*.pca"], "SPICE files"))) {
+            match tinyfiledialogs::open_file_dialog(
+                "Select SPICE file",
+                "data.bsp",
+                Some((&["*.bsp", "*.pca"], "SPICE files")),
+            ) {
                 Some(file) => {
                     *new_spice_file = file;
-                },
+                }
                 None => {
                     toasts.0.add(error_toast("No file selected"));
-                },
+                }
             }
         }
-        let loading_button = ui.add_enabled(!*loading && loading_state.loaded_spice_files, Button::new("Load SPICE File"));
+        let loading_button = ui.add_enabled(
+            !*loading && loading_state.loaded_spice_files,
+            Button::new("Load SPICE File"),
+        );
         if loading_button.clicked() {
-            task_executor.start(load_scenario_file(new_spice_file.clone(), almanac_holder.0.clone()));
+            task_executor.start(load_scenario_file(
+                new_spice_file.clone(),
+                almanac_holder.0.clone(),
+            ));
             *loading = true;
         }
-        let reload_button = ui.add_enabled(!*loading && loading_state.loaded_spice_files, Button::new("Reload SPICE Files"));
+        let reload_button = ui.add_enabled(
+            !*loading && loading_state.loaded_spice_files,
+            Button::new("Reload SPICE Files"),
+        );
         if reload_button.clicked() {
             loading_state.reload_spice_files();
         }
@@ -208,14 +251,19 @@ fn edit_spk_files(
 
 async fn load_scenario_file(
     new_spk_file: String,
-    almanac: Almanac
+    almanac: Almanac,
 ) -> Result<(Almanac, String), String> {
     if !fs::exists("data").unwrap_or(false) {
         fs::create_dir("data").map_err(|_| "Failed to create data directory".to_string())?;
     }
-    let file_name = Path::new(&new_spk_file).file_name().and_then(|f| f.to_str()).map(|s| s.to_string()).ok_or("Invalid file name")?;
+    let file_name = Path::new(&new_spk_file)
+        .file_name()
+        .and_then(|f| f.to_str())
+        .map(|s| s.to_string())
+        .ok_or("Invalid file name")?;
     let data_path = format!("data/{}", file_name);
-    let exists = fs::exists(new_spk_file.clone()).unwrap_or(false) || fs::exists(data_path.clone()).unwrap_or(false);
+    let exists = fs::exists(new_spk_file.clone()).unwrap_or(false)
+        || fs::exists(data_path.clone()).unwrap_or(false);
     if !exists {
         return Err("File not found".to_string());
     }
@@ -225,12 +273,11 @@ async fn load_scenario_file(
     let mut copied = false;
     if !fs::exists(&data_path).unwrap_or(false) {
         copied = true;
-        fs::copy(new_spk_file.clone(), &data_path).map_err(|_| "Failed to copy file".to_string())?;
+        fs::copy(new_spk_file.clone(), &data_path)
+            .map_err(|_| "Failed to copy file".to_string())?;
     }
     match load_spk(data_path.clone(), &almanac) {
-        Ok(almanac) => {
-            Ok((almanac, file_name))
-        },
+        Ok(almanac) => Ok((almanac, file_name)),
         Err(_) => {
             if copied {
                 fs::remove_file(data_path).map_err(|_| "Failed to remove file".to_string())?;

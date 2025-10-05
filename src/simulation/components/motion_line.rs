@@ -1,36 +1,43 @@
-use crate::simulation::components::body::{BillboardVisible, BodyChildren, BodyShape, Moon, OrbitSettings, Planet, SimPosition, Star};
+use crate::simulation::components::body::{
+    BillboardVisible, BodyChildren, BodyShape, Moon, OrbitSettings, Planet, SimPosition, Star,
+};
 use crate::simulation::components::scale::SimulationScale;
 use crate::simulation::components::speed::Speed;
 use crate::simulation::integration::{paused, Pause, SimulationStep, SubSteps};
 use crate::utils::sim_state_type_simulation;
 use bevy::prelude::not;
-use bevy::{prelude::{App, Entity, Gizmos, IntoScheduleConfigs, Plugin, PreUpdate, Query, Res, Resource, Transform, Vec3, With, Without}, time::Time};
+use bevy::{
+    prelude::{
+        App, Entity, Gizmos, IntoScheduleConfigs, Plugin, PreUpdate, Query, Res, Resource,
+        Transform, Vec3, With, Without,
+    },
+    time::Time,
+};
 
 pub struct MotionLinePlugin;
 
 impl Plugin for MotionLinePlugin {
     fn build(&self, app: &mut App) {
-        app
-            .init_resource::<OrbitOffset>()
-            .add_systems(PreUpdate, (update_lines.after(SimulationStep).run_if(not(paused)), (draw_orbit_line).after(update_lines)).run_if(sim_state_type_simulation));
+        app.init_resource::<OrbitOffset>().add_systems(
+            PreUpdate,
+            (
+                update_lines.after(SimulationStep).run_if(not(paused)),
+                (draw_orbit_line).after(update_lines),
+            )
+                .run_if(sim_state_type_simulation),
+        );
     }
 }
 
 #[derive(Resource)]
 pub struct OrbitOffset {
-    
     pub value: Vec3,
-
 }
 
 impl Default for OrbitOffset {
-    
     fn default() -> Self {
-        OrbitOffset {
-            value: Vec3::ZERO,
-        }
+        OrbitOffset { value: Vec3::ZERO }
     }
-    
 }
 
 const MULTIPLIER: f32 = 0.0001;
@@ -38,13 +45,32 @@ const PLANET_HIDE_MULTIPLIER: f32 = 10000.0;
 const HIDE_MULTIPLIER: f32 = 100.0;
 
 fn update_lines(
-    mut planet_query: Query<(Entity, &mut OrbitSettings, &SimPosition, &BodyChildren, &BodyShape, &BillboardVisible), (With<Planet>, Without<Moon>, Without<Star>)>,
-    mut moon_query: Query<(Entity, &SimPosition, &mut OrbitSettings, &BodyShape, &BillboardVisible), (With<Moon>, Without<Planet>, Without<Star>)>,
+    mut planet_query: Query<
+        (
+            Entity,
+            &mut OrbitSettings,
+            &SimPosition,
+            &BodyChildren,
+            &BodyShape,
+            &BillboardVisible,
+        ),
+        (With<Planet>, Without<Moon>, Without<Star>),
+    >,
+    mut moon_query: Query<
+        (
+            Entity,
+            &SimPosition,
+            &mut OrbitSettings,
+            &BodyShape,
+            &BillboardVisible,
+        ),
+        (With<Moon>, Without<Planet>, Without<Star>),
+    >,
     time: Res<Time>,
     speed: Res<Speed>,
     substeps: Res<SubSteps>,
     pause: Res<Pause>,
-    scale: Res<SimulationScale>
+    scale: Res<SimulationScale>,
 ) {
     if pause.0 {
         return;
@@ -55,8 +81,10 @@ fn update_lines(
             let speed = speed.0 as f32 * (substeps.0 as f32);
             let max_step = (orbit.period as f32 / speed) * MULTIPLIER;
             if orbit.step >= max_step {
-                orbit.lines.push_back(scale.m_to_unit_dvec(pos.current).as_vec3());
-              //  insert_at_nearest_distance(&mut orbit.lines, (pos.current * M_TO_UNIT).as_vec3());
+                orbit
+                    .lines
+                    .push_back(scale.m_to_unit_dvec(pos.current).as_vec3());
+                //  insert_at_nearest_distance(&mut orbit.lines, (pos.current * M_TO_UNIT).as_vec3());
                 orbit.step = 0.0;
             } else {
                 orbit.step += time.delta_secs() * orbit.orbit_line_multiplier;
@@ -65,16 +93,17 @@ fn update_lines(
     }
     for (entity, pos, mut orbit, _diameter, _billboard_visible) in &mut moon_query {
         if orbit.draw_lines {
-            if let Some((_, _, p_pos, _, _, _)) = planet_query.iter().find(|(_, _, _, children, _, _)| {
-                children.0.contains(&entity)
-            }) {
-           //     orbit.hide_lines = (cam.radius < scale.m_to_unit_32(_diameter.ellipsoid.mean_equatorial_radius_km() as f32 * 2.)  * HIDE_MULTIPLIER && _entity == selected_entity._entity.unwrap() || !_billboard_visible.0) && ui_state.dyn_hide_orbit_lines;
+            if let Some((_, _, p_pos, _, _, _)) = planet_query
+                .iter()
+                .find(|(_, _, _, children, _, _)| children.0.contains(&entity))
+            {
+                //     orbit.hide_lines = (cam.radius < scale.m_to_unit_32(_diameter.ellipsoid.mean_equatorial_radius_km() as f32 * 2.)  * HIDE_MULTIPLIER && _entity == selected_entity._entity.unwrap() || !_billboard_visible.0) && ui_state.dyn_hide_orbit_lines;
                 let speed = speed.0 as f32 * (substeps.0 as f32);
                 let max_step = (orbit.period as f32 / speed) * MULTIPLIER;
                 if orbit.step >= max_step {
                     let raw_p_pos = scale.m_to_unit_dvec(p_pos.current).as_vec3();
                     let raw_pos = scale.m_to_unit_dvec(pos.current).as_vec3();
-                    orbit.lines.push_back(raw_pos - raw_p_pos);   
+                    orbit.lines.push_back(raw_pos - raw_p_pos);
                     //insert_at_nearest_distance(&mut orbit.lines, raw_pos - raw_p_pos);
                     orbit.step = 0.0;
                 } else {
@@ -87,10 +116,16 @@ fn update_lines(
 
 fn draw_orbit_line(
     offset: Res<OrbitOffset>,
-    planet_query: Query<(&OrbitSettings, &SimPosition, &BodyChildren, &Transform), (With<Planet>, Without<Moon>, Without<Star>)>,
-    moon_query: Query<(Entity, &OrbitSettings, &Transform), (With<Moon>, Without<Planet>, Without<Star>)>,
+    planet_query: Query<
+        (&OrbitSettings, &SimPosition, &BodyChildren, &Transform),
+        (With<Planet>, Without<Moon>, Without<Star>),
+    >,
+    moon_query: Query<
+        (Entity, &OrbitSettings, &Transform),
+        (With<Moon>, Without<Planet>, Without<Star>),
+    >,
     mut gizmos: Gizmos,
-    scale: Res<SimulationScale>
+    scale: Res<SimulationScale>,
 ) {
     for (orbit, _, _, transform) in &planet_query {
         if orbit.draw_lines && !orbit.hide_lines {
@@ -99,11 +134,17 @@ fn draw_orbit_line(
     }
     for (entity, orbit, transform) in &moon_query {
         if orbit.draw_lines && !orbit.hide_lines {
-            if let Some((_, p_pos, _, _)) = planet_query.iter().find(|(_, _, children, _)| {
-                children.0.contains(&entity)
-            }) {
+            if let Some((_, p_pos, _, _)) = planet_query
+                .iter()
+                .find(|(_, _, children, _)| children.0.contains(&entity))
+            {
                 let raw_p_pos = scale.m_to_unit_dvec(p_pos.current).as_vec3();
-                draw_lines(orbit, offset.value + raw_p_pos, &mut gizmos, transform.translation)
+                draw_lines(
+                    orbit,
+                    offset.value + raw_p_pos,
+                    &mut gizmos,
+                    transform.translation,
+                )
             }
         }
     }
@@ -153,6 +194,6 @@ pub fn draw_lines(orbit: &OrbitSettings, offset: Vec3, gizmos: &mut Gizmos, curr
         }
     }
     if let Some(last) = orbit.lines.iter().last() {
-        gizmos.line(*last + offset, current_pos, orbit.color)   
+        gizmos.line(*last + offset, current_pos, orbit.color)
     }
 }

@@ -19,7 +19,7 @@ pub fn editor_bottom_bar(
     scenario_data: Res<ScenarioData>,
     diagnostics: Res<DiagnosticsStore>,
     systems: Res<EditorSystems>,
-    mut commands: Commands
+    mut commands: Commands,
 ) {
     if egui_context.try_ctx_mut().is_none() {
         return;
@@ -32,18 +32,23 @@ pub fn editor_bottom_bar(
             ui.horizontal(|ui| {
                 ui.with_layout(egui::Layout::left_to_right(egui::Align::LEFT), |ui| {
                     ui.horizontal_centered(|ui| {
-                        ui.label(format!(
-                            "Date: {}",
-                            date.format("%d.%m.%Y"),
-                        ));
+                        ui.label(format!("Date: {}", date.format("%d.%m.%Y"),));
                     });
                 });
 
                 ui.with_layout(egui::Layout::left_to_right(Align::Center), |ui| {
-                    if ui.button("Reset").on_hover_text("Reset scenario from file").clicked() {
+                    if ui
+                        .button("Reset")
+                        .on_hover_text("Reset scenario from file")
+                        .clicked()
+                    {
                         let _ = state.set(SimState::Reset);
                     }
-                    if ui.button("Save").on_hover_text("Save scenario to file").clicked() {
+                    if ui
+                        .button("Save")
+                        .on_hover_text("Save scenario to file")
+                        .clicked()
+                    {
                         commands.run_system(systems.0[EditorSystemType::SAVE_SCENARIO])
                     }
                 });
@@ -70,4 +75,3 @@ pub fn editor_bottom_bar(
             });
         });
 }
-

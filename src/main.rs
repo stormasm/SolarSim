@@ -41,44 +41,46 @@ fn set_window_icon(
                 let rgba = image.into_raw();
                 (rgba, width, height)
             };
-        
+
             let icon = Icon::from_rgba(icon_rgba, icon_width, icon_height).unwrap();
-        
+
             window.set_window_icon(Some(icon));
         }
     }
 }
 **/
 
-
 fn main() {
     App::new()
-     //   .add_plugins(DefaultPlugins)
+        //   .add_plugins(DefaultPlugins)
         .register_asset_source(
             SCENARIO_ASSET_SOURCE,
             AssetSourceBuilder::platform_default(SCENARIO_ASSET_SOURCE, None),
         )
-        .add_plugins(DefaultPlugins
-            .set(WindowPlugin {
-                primary_window: Some(Window {
-                    title: "Solar System Simulation (Jan Tennert)".to_string(),
-                    present_mode: PresentMode::AutoVsync,
+        .add_plugins(
+            DefaultPlugins
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: "Solar System Simulation (Jan Tennert)".to_string(),
+                        present_mode: PresentMode::AutoVsync,
+                        ..default()
+                    }),
+                    ..default()
+                })
+                .set(RenderPlugin {
+                    render_creation: RenderCreation::Automatic(WgpuSettings {
+                        //      backends: Some(Backends::VULKAN),
+                        ..default()
+                    }),
                     ..default()
                 }),
-                ..default()
-            })
-            .set(RenderPlugin {
-                render_creation: RenderCreation::Automatic(WgpuSettings {
-              //      backends: Some(Backends::VULKAN),
-                    ..default()
-                }),
-                ..default()
-            })
         )
-      //  .add_plugins(WorldInspectorPlugin::default())
+        //  .add_plugins(WorldInspectorPlugin::default())
         .add_plugins(EditorPlugin)
         .add_plugins(SimulationPlugin)
-        .add_plugins(EguiPlugin { enable_multipass_for_primary_context: true })
+        .add_plugins(EguiPlugin {
+            enable_multipass_for_primary_context: true,
+        })
         .add_plugins(SerializationPlugin)
         .add_plugins(PanOrbitCameraPlugin)
         .add_plugins(BillboardPlugin)

@@ -5,7 +5,9 @@ use anise::structure::planetocentric::ellipsoid::Ellipsoid;
 use bevy::color::palettes::css;
 use bevy::color::Color;
 use bevy::math::{DVec3, Mat3, Vec3};
-use bevy::prelude::{default, Bundle, Component, Entity, Handle, Name, Reflect, Scene, Srgba, Transform};
+use bevy::prelude::{
+    default, Bundle, Component, Entity, Handle, Name, Reflect, Scene, Srgba, Transform,
+};
 use std::collections::VecDeque;
 
 #[derive(Component, Clone, Default, Reflect, Copy)]
@@ -24,14 +26,13 @@ pub struct RotationSpeed(pub f64);
 pub struct BodyRotation {
     pub matrix: Mat3,
     pub axis: Vec3,
-    pub applied: bool
+    pub applied: bool,
 }
 
 #[derive(Component, Reflect, Clone, Default)]
 pub struct ModelPath(pub String);
 
 impl ModelPath {
-
     pub fn cleaned(&self) -> String {
         self.0.replace("models/", "").replace("#Scene0", "")
     }
@@ -39,7 +40,6 @@ impl ModelPath {
     pub fn from_cleaned(value: &str) -> Self {
         ModelPath(format!("models/{}#Scene0", value))
     }
-
 }
 
 #[derive(Component, Reflect, Clone, Default)]
@@ -50,7 +50,6 @@ pub struct BodyParent(pub Entity);
 
 #[derive(Component, Reflect, Clone)]
 pub struct OrbitSettings {
-    
     pub color: Color,
     pub step: f32,
     pub lines: VecDeque<Vec3>,
@@ -63,14 +62,12 @@ pub struct OrbitSettings {
     pub arrow_scale: u64,
     pub auto_scale_arrows: bool,
     pub period: f64,
-                         
 }
 
 #[derive(Default, Component, Reflect, Clone)]
 pub struct BillboardVisible(pub bool);
 
 impl Default for OrbitSettings {
-    
     fn default() -> Self {
         OrbitSettings {
             color: css::GREEN.into(),
@@ -83,44 +80,42 @@ impl Default for OrbitSettings {
             display_velocity: false,
             arrow_scale: 1,
             hide_lines: false,
-            orbit_line_multiplier: 1.0 ,
+            orbit_line_multiplier: 1.0,
             auto_scale_arrows: true,
         }
     }
-    
 }
 
 #[derive(Component, Clone, Default)]
 pub struct SimPosition {
-
     pub current: DVec3,
     pub previous: Option<DVec3>,
-
 }
 
 impl SimPosition {
-
     pub fn new(value: DVec3) -> Self {
-        SimPosition { current: value, previous: None }
+        SimPosition {
+            current: value,
+            previous: None,
+        }
     }
-
 }
 
 #[derive(Component, Clone)]
 pub struct BodyShape {
-
     pub applied: bool,
     pub ellipsoid: Ellipsoid,
     pub path: String,
-
 }
 
 impl Default for BodyShape {
-
     fn default() -> Self {
-        BodyShape { applied: false, ellipsoid: Ellipsoid::from_sphere(1.0), path: "".to_string() }
+        BodyShape {
+            applied: false,
+            ellipsoid: Ellipsoid::from_sphere(1.0),
+            path: "".to_string(),
+        }
     }
-
 }
 
 #[derive(Component, Reflect, Clone)]
@@ -131,18 +126,15 @@ pub struct SceneEntity;
 
 #[derive(Component, Reflect, Clone)]
 pub struct LightSource {
-
     pub parent: Entity,
     pub color: Color,
     pub imposter_color: Color,
     pub intensity: f32,
     pub range: f32,
     pub enabled: bool,
-
 }
 
 impl LightSource {
-
     pub fn new(parent: Entity, source: &SerializedLightSource) -> Self {
         LightSource {
             parent,
@@ -172,15 +164,12 @@ impl LightSource {
         source.range = settings.range;
         source.enabled = settings.enabled;
     }
-
 }
 
 //Types:
 #[derive(Component, Reflect, Clone, Default)]
 pub struct Star {
-    
     pub use_imposter: bool,
-
 }
 
 #[derive(Component, Reflect, Clone, Default)]
@@ -191,7 +180,6 @@ pub struct Moon;
 
 #[derive(Bundle, Clone, Default)]
 pub struct BodyBundle {
-
     pub mass: Mass,
     pub transform: Transform,
     pub sim_position: SimPosition,
@@ -205,11 +193,9 @@ pub struct BodyBundle {
     pub diameter: BodyShape,
     pub billboard_visible: BillboardVisible,
     pub naif_id: AniseMetadata,
-
 }
 
 impl BodyBundle {
-    
     pub fn from_serialized(value: &SerializedBody) -> Self {
         BodyBundle {
             mass: Mass(value.data.mass),
@@ -232,14 +218,12 @@ impl BodyBundle {
                 orientation_id: value.data.fixed_body_frame.orientation_id,
                 target_id: value.data.fixed_body_frame.target_id,
             },
-           ..default()
+            ..default()
         }
     }
-    
 }
 
 impl BodyBundle {
-
     pub fn empty(index: i32) -> Self {
         BodyBundle {
             mass: Mass(0.0),
@@ -247,9 +231,7 @@ impl BodyBundle {
             vel: Velocity(DVec3::ZERO),
             name: Name::new(format!("New body {}", index)),
             model_path: ModelPath("models/earth.glb#Scene0".to_string()),
-            diameter: BodyShape {
-                ..default()
-            },
+            diameter: BodyShape { ..default() },
             rotation: BodyRotation {
                 matrix: Mat3::IDENTITY,
                 ..default()
@@ -258,5 +240,4 @@ impl BodyBundle {
             ..default()
         }
     }
-
 }

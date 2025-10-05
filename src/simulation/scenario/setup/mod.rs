@@ -10,8 +10,7 @@ pub struct SetupPlugin;
 
 impl Plugin for SetupPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .init_resource::<ScenarioData>()
+        app.init_resource::<ScenarioData>()
             .add_systems(Startup, setup_camera)
             .add_systems(Update, setup_scenario.run_if(in_state(SimState::Loading)));
     }

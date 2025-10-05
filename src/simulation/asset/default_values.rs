@@ -9,7 +9,7 @@ pub fn default_id() -> i32 {
 pub fn default_frame() -> SerializedFixedBodyFrame {
     SerializedFixedBodyFrame {
         target_id: default_id(),
-        orientation_id: default_id()
+        orientation_id: default_id(),
     }
 }
 

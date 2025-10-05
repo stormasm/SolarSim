@@ -28,7 +28,7 @@ impl Plugin for PanOrbitCameraPlugin {
         .register_type::<PanOrbitCamera>()
         .add_systems(Update, pan_orbit_camera.after(apply_physics).run_if(in_state(SimState::Loaded)));
         //.add_system_to_stage(CoreStage::PostUpdate, pan_orbit_camera);
-    }  
+    }
 }
 
 // Time constant for smooth transitions (lower = slower, higher = faster)

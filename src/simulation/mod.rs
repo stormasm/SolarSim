@@ -6,21 +6,21 @@ use bevy::app::{App, Plugin};
 use bevy::prelude::{AppExtStates, States, *};
 use scenario::loading::LoadingPlugin;
 
-pub mod input;
-pub mod render;
-pub mod ui;
-pub mod components;
 pub mod asset;
-pub mod units;
-pub mod scenario;
+pub mod components;
+pub mod input;
 pub mod integration;
+pub mod render;
+pub mod scenario;
+pub mod ui;
+pub mod units;
 
 #[derive(Clone, Eq, PartialEq, Debug, Default, Hash, Resource)]
 pub enum SimStateType {
     #[default]
     None,
     Simulation,
-    Editor
+    Editor,
 }
 
 #[derive(States, Clone, Eq, PartialEq, Debug, Default, Hash)]
@@ -32,16 +32,14 @@ pub enum SimState {
     Loading,
     Loaded,
     Reset,
-    ExitToMainMenu
+    ExitToMainMenu,
 }
 
 pub struct SimulationPlugin;
 
 impl Plugin for SimulationPlugin {
-
     fn build(&self, app: &mut App) {
-        app
-            .init_resource::<SimStateType>()
+        app.init_resource::<SimStateType>()
             .init_state::<SimState>()
             .add_plugins(SimInputPlugin)
             .add_plugins(SimRenderPlugin)
@@ -49,5 +47,4 @@ impl Plugin for SimulationPlugin {
             .add_plugins(SimComponentPlugin)
             .add_plugins(LoadingPlugin);
     }
-
 }

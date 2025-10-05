@@ -6,10 +6,7 @@ use bevy::window::WindowMode;
 use bevy_egui::{egui, EguiContextSettings, EguiContexts};
 use bevy_panorbit_camera::PanOrbitCamera;
 
-pub fn key_window(
-    mut egui_ctx: EguiContexts,
-    mut ui_state: ResMut<UiState>,
-) {
+pub fn key_window(mut egui_ctx: EguiContexts, mut ui_state: ResMut<UiState>) {
     if !ui_state.visible || egui_ctx.try_ctx_mut().is_none() {
         return;
     }
@@ -34,10 +31,7 @@ pub fn key_window(
         });
 }
 
-pub fn global_input_system(
-    keys: Res<ButtonInput<KeyCode>>,
-    mut windows: Query<&mut Window>,
-) {
+pub fn global_input_system(keys: Res<ButtonInput<KeyCode>>, mut windows: Query<&mut Window>) {
     if keys.just_pressed(KeyCode::F11) {
         let mut window = windows.single_mut().unwrap();
         let current = window.mode;
@@ -60,7 +54,7 @@ pub fn sim_input_system(
 ) {
     let timestep_selected = match ui_state.step_type {
         StepType::SUBSTEPS => false,
-        StepType::TIMESTEPS => true
+        StepType::TIMESTEPS => true,
     };
     let mut egui_settings = egui_settings.single_mut().unwrap();
     if keys.just_pressed(KeyCode::F10) {

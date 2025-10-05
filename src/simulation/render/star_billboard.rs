@@ -5,7 +5,11 @@ use crate::simulation::SimState;
 use bevy::app::{App, Plugin, Update};
 use bevy::asset::Asset;
 use bevy::math::Vec3;
-use bevy::prelude::{in_state, AlphaMode, Camera, ChildOf, Children, Component, Entity, Handle, Image, IntoScheduleConfigs, LinearRgba, Material, MaterialPlugin, Query, Res, Transform, TypePath, Visibility, With, Without};
+use bevy::prelude::{
+    in_state, AlphaMode, Camera, ChildOf, Children, Component, Entity, Handle, Image,
+    IntoScheduleConfigs, LinearRgba, Material, MaterialPlugin, Query, Res, Transform, TypePath,
+    Visibility, With, Without,
+};
 use bevy::render::render_resource::{AsBindGroup, ShaderRef};
 use bevy::scene::SceneInstance;
 
@@ -15,13 +19,14 @@ pub const STAR_IMPOSTER_DIVIDER: f32 = 10000.0;
 pub struct StarBillboardPlugin;
 
 impl Plugin for StarBillboardPlugin {
-
     fn build(&self, app: &mut App) {
-        app
-            .add_plugins(MaterialPlugin::<SunImposterMaterial>::default())
-            .add_systems(Update, (change_sun_renderer/*.after(pan_orbit_camera)*/).run_if(in_state(SimState::Loaded)));
+        app.add_plugins(MaterialPlugin::<SunImposterMaterial>::default())
+            .add_systems(
+                Update,
+                (change_sun_renderer/*.after(pan_orbit_camera)*/)
+                    .run_if(in_state(SimState::Loaded)),
+            );
     }
-
 }
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
@@ -39,7 +44,6 @@ pub struct SunImposterMaterial {
 }
 
 impl SunImposterMaterial {
-
     pub fn with(color: LinearRgba, radius: f32) -> Self {
         Self {
             color,
@@ -49,7 +53,6 @@ impl SunImposterMaterial {
             alpha_mode: AlphaMode::Blend,
         }
     }
-
 }
 
 impl Material for SunImposterMaterial {
@@ -68,9 +71,12 @@ pub struct StarBillboard(pub Entity);
 fn change_sun_renderer(
     camera: Query<(&Transform, &Camera), (Without<Star>, Without<StarBillboard>)>,
     mut stars: Query<(&Transform, &Children), (Without<Camera>, Without<StarBillboard>)>,
-    mut star_billboards: Query<(&mut Transform, &mut Visibility, &ChildOf), (With<StarBillboard>, Without<Camera>, Without<Star>)>,
+    mut star_billboards: Query<
+        (&mut Transform, &mut Visibility, &ChildOf),
+        (With<StarBillboard>, Without<Camera>, Without<Star>),
+    >,
     mut scenes: Query<(&SceneInstance, &mut Visibility), (Without<StarBillboard>, Without<Star>)>,
-    scale: Res<SimulationScale>
+    scale: Res<SimulationScale>,
 ) {
     let (c_transform, camera) = camera.single().unwrap();
     let multiplier = scale.0 / DEF_M_TO_UNIT as f32;

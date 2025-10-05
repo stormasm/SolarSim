@@ -1,6 +1,9 @@
 use bevy::app::{PostUpdate, PreUpdate};
 use bevy::prelude::{ButtonInput, IntoScheduleConfigs};
-use bevy::{input::InputSystem, prelude::{KeyCode, MouseButton, Plugin, Res, ResMut, Resource}};
+use bevy::{
+    input::InputSystem,
+    prelude::{KeyCode, MouseButton, Plugin, Res, ResMut, Resource},
+};
 use bevy_egui::{EguiContexts, EguiPostUpdateSet};
 
 //Block input when hovering over egui interfaces
@@ -14,17 +17,14 @@ struct EguiBlockInputState {
 pub struct BlockInputPlugin;
 
 impl Plugin for BlockInputPlugin {
-    
     fn build(&self, app: &mut bevy::prelude::App) {
-        app
-        .init_resource::<EguiBlockInputState>()
-        .add_systems(PreUpdate, egui_block_input.after(InputSystem))
-        .add_systems(
-            PostUpdate,
-            egui_wants_input.after(EguiPostUpdateSet::ProcessOutput),
-        );
+        app.init_resource::<EguiBlockInputState>()
+            .add_systems(PreUpdate, egui_block_input.after(InputSystem))
+            .add_systems(
+                PostUpdate,
+                egui_wants_input.after(EguiPostUpdateSet::ProcessOutput),
+            );
     }
-    
 }
 
 fn egui_wants_input(mut state: ResMut<EguiBlockInputState>, mut contexts: EguiContexts) {

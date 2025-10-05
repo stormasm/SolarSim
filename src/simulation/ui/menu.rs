@@ -4,10 +4,8 @@ use bevy::{app::AppExit, prelude::*};
 pub struct MenuPlugin;
 
 impl Plugin for MenuPlugin {
-
     fn build(&self, app: &mut App) {
-        app
-            .add_systems(OnEnter(SimState::Menu), spawn_menu)
+        app.add_systems(OnEnter(SimState::Menu), spawn_menu)
             .add_systems(OnExit(SimState::Menu), despawn_menu)
             .add_systems(Update, setup_background.run_if(in_state(SimState::Setup)))
             .add_systems(Update, (button_system).run_if(in_state(SimState::Menu)));
@@ -22,36 +20,35 @@ pub struct BackgroundImage;
 
 fn despawn_menu(
     mut commands: Commands,
-    background: Query<&Children, (With<Node>, With<BackgroundImage>)>
+    background: Query<&Children, (With<Node>, With<BackgroundImage>)>,
 ) {
     let children = background.single().unwrap();
     for entity in children.iter() {
-        commands.entity(entity).despawn();   
+        commands.entity(entity).despawn();
     }
 }
 
 enum MenuButtonType {
     START,
-    EXIT
+    EXIT,
 }
-
 
 #[derive(Component)]
 struct MenuButton(pub MenuButtonType);
 
-fn setup_background(  
-    mut commands: Commands, 
+fn setup_background(
+    mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut state: ResMut<NextState<SimState>>,
 ) {
     commands
         .spawn(Node {
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
-                flex_direction: FlexDirection::Column,
-                ..default()
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            flex_direction: FlexDirection::Column,
+            ..default()
         })
         .insert(BackgroundColor(Color::WHITE.into()))
         .insert(ImageNode::new(asset_server.load("images/background.png")))
@@ -60,36 +57,36 @@ fn setup_background(
 }
 
 fn spawn_menu(
-    mut commands: Commands, 
-    mut parent: Query<(Entity, &mut Visibility), With<BackgroundImage>>
+    mut commands: Commands,
+    mut parent: Query<(Entity, &mut Visibility), With<BackgroundImage>>,
 ) {
     let (background, mut visibility) = parent.single_mut().unwrap();
     let mut parent = commands.entity(background);
 
     parent.with_children(|parent| {
-            parent.spawn((
-                Text::from("Solar System Simulation"),
-                TextFont::from_font_size(70.0),
-                TextColor(Color::WHITE),
-                Node {
-                    margin: UiRect::all(Val::Px(20.)),
-                    ..default()
-                },
-                Label
-            ));
-            parent.spawn((
-                Text::from("by Jan Tennert"),
-                TextFont::from_font_size(20.0),
-                TextColor(Color::WHITE),
-                Node {
-                    margin: UiRect::bottom(Val::Px(40.)),
-                    ..default()
-                },
-                Label
-            ));
-            button("Start", MenuButtonType::START, parent);
-            button("Exit", MenuButtonType::EXIT, parent);
-        });
+        parent.spawn((
+            Text::from("Solar System Simulation"),
+            TextFont::from_font_size(70.0),
+            TextColor(Color::WHITE),
+            Node {
+                margin: UiRect::all(Val::Px(20.)),
+                ..default()
+            },
+            Label,
+        ));
+        parent.spawn((
+            Text::from("by Jan Tennert"),
+            TextFont::from_font_size(20.0),
+            TextColor(Color::WHITE),
+            Node {
+                margin: UiRect::bottom(Val::Px(40.)),
+                ..default()
+            },
+            Label,
+        ));
+        button("Start", MenuButtonType::START, parent);
+        button("Exit", MenuButtonType::EXIT, parent);
+    });
     *visibility = Visibility::Visible;
 }
 
@@ -123,32 +120,30 @@ fn button_system(
             &Interaction,
             &mut BackgroundColor,
             &mut BorderColor,
-            &MenuButton
+            &MenuButton,
         ),
         (Changed<Interaction>, With<Button>),
     >,
     mut state: ResMut<NextState<SimState>>,
-    mut exit: EventWriter<AppExit>
+    mut exit: EventWriter<AppExit>,
 ) {
     for (interaction, mut color, _, button) in &mut interaction_query {
         match *interaction {
-            Interaction::Pressed => {
-                match button.0 {
-                    MenuButtonType::START => {
-                        let _ = state.set(SimState::ScenarioSelection);
-                    }
-                    MenuButtonType::EXIT => {
-                        exit.write(AppExit::Success);
-                    }
+            Interaction::Pressed => match button.0 {
+                MenuButtonType::START => {
+                    let _ = state.set(SimState::ScenarioSelection);
                 }
-            }
+                MenuButtonType::EXIT => {
+                    exit.write(AppExit::Success);
+                }
+            },
             Interaction::Hovered => {
                 *color = HOVERED_BUTTON.into();
-           //     border_color.0 = Color::WHITE;
+                //     border_color.0 = Color::WHITE;
             }
             Interaction::None => {
                 *color = NORMAL_BUTTON.into();
-          //      border_color.0 = Color::BLACK;
+                //      border_color.0 = Color::BLACK;
             }
         }
     }

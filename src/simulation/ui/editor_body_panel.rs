@@ -1,4 +1,7 @@
-use crate::simulation::components::body::{BodyRotation, BodyShape, LightSource, Mass, ModelPath, RotationSpeed, SceneEntity, SceneHandle, SimPosition, Velocity};
+use crate::simulation::components::body::{
+    BodyRotation, BodyShape, LightSource, Mass, ModelPath, RotationSpeed, SceneEntity, SceneHandle,
+    SimPosition, Velocity,
+};
 use crate::simulation::components::editor::{EditorSystemType, EditorSystems};
 use crate::simulation::components::horizons::AniseMetadata;
 use crate::simulation::components::scale::SimulationScale;
@@ -12,7 +15,10 @@ use anise::structure::planetocentric::ellipsoid::Ellipsoid;
 use bevy::asset::{AssetServer, Assets};
 use bevy::math::DVec3;
 use bevy::pbr::MeshMaterial3d;
-use bevy::prelude::{default, Color, Commands, Entity, Handle, Mat3, Mut, Name, PointLight, Query, Res, ResMut, Resource, Scene, Srgba, Visibility, With};
+use bevy::prelude::{
+    default, Color, Commands, Entity, Handle, Mat3, Mut, Name, PointLight, Query, Res, ResMut,
+    Resource, Scene, Srgba, Visibility, With,
+};
 use bevy_egui::egui::{Align, Context, Layout, ScrollArea};
 use bevy_egui::{egui, EguiContexts};
 
@@ -31,7 +37,7 @@ pub struct EditorPanelState {
     pub ephemeris_id: i32,
     pub orientation_id: i32,
     pub target_id: i32,
-    pub rotation_matrix: Mat3
+    pub rotation_matrix: Mat3,
 }
 
 impl Default for EditorPanelState {
@@ -50,7 +56,7 @@ impl Default for EditorPanelState {
             ephemeris_id: -1,
             orientation_id: -1,
             target_id: -1,
-            rotation_matrix: Mat3::IDENTITY
+            rotation_matrix: Mat3::IDENTITY,
         }
     }
 }
@@ -67,7 +73,22 @@ pub struct LightSettings {
 pub fn editor_body_panel(
     mut egui_context: EguiContexts,
     selected_entity: Res<SelectedEntity>,
-    mut query: Query<(Entity, &mut Name, &mut SimPosition, &mut Velocity, &mut Mass, &mut BodyShape, &mut RotationSpeed, &mut BodyRotation, &mut ModelPath, &mut SceneHandle, &mut AniseMetadata), With<Mass>>,
+    mut query: Query<
+        (
+            Entity,
+            &mut Name,
+            &mut SimPosition,
+            &mut Velocity,
+            &mut Mass,
+            &mut BodyShape,
+            &mut RotationSpeed,
+            &mut BodyRotation,
+            &mut ModelPath,
+            &mut SceneHandle,
+            &mut AniseMetadata,
+        ),
+        With<Mass>,
+    >,
     scene_query: Query<Entity, With<SceneEntity>>,
     mut state: ResMut<EditorPanelState>,
     mut commands: Commands,
@@ -77,20 +98,74 @@ pub fn editor_body_panel(
     mut billboards: Query<(&StarBillboard, &mut MeshMaterial3d<SunImposterMaterial>)>,
     mut materials: ResMut<Assets<SunImposterMaterial>>,
     mut toast_container: ResMut<ToastContainer>,
-    scale: Res<SimulationScale>
+    scale: Res<SimulationScale>,
 ) {
     if egui_context.try_ctx_mut().is_none() {
         return;
     }
-    let mut apply  = false;
+    let mut apply = false;
     if let Some(s_entity) = selected_entity.entity {
-        if let Ok((entity, mut name, mut pos, mut vel, mut mass, mut diameter, mut rotation_speed, mut rotation, mut model_path, mut scene, mut horizons_id)) = query.get_mut(s_entity) {
-            let light = light_query.iter_mut().find(|(_, l, _)| l.parent == entity).map(|(a,b,c)| (a,b,c));
-            let mut billboard_material = billboards.iter_mut().find(|(b, _)| b.0 == entity).map(|(_, m)| m.clone());
+        if let Ok((
+            entity,
+            mut name,
+            mut pos,
+            mut vel,
+            mut mass,
+            mut diameter,
+            mut rotation_speed,
+            mut rotation,
+            mut model_path,
+            mut scene,
+            mut horizons_id,
+        )) = query.get_mut(s_entity)
+        {
+            let light = light_query
+                .iter_mut()
+                .find(|(_, l, _)| l.parent == entity)
+                .map(|(a, b, c)| (a, b, c));
+            let mut billboard_material = billboards
+                .iter_mut()
+                .find(|(b, _)| b.0 == entity)
+                .map(|(_, m)| m.clone());
             if state.entity.is_none() || state.entity.unwrap() != s_entity {
-                initialize_state(state.as_mut(), s_entity, &name, &pos, &vel, &mass, &diameter, &rotation_speed,&model_path, light.as_ref(), &horizons_id, &rotation);
+                initialize_state(
+                    state.as_mut(),
+                    s_entity,
+                    &name,
+                    &pos,
+                    &vel,
+                    &mass,
+                    &diameter,
+                    &rotation_speed,
+                    &model_path,
+                    light.as_ref(),
+                    &horizons_id,
+                    &rotation,
+                );
             }
-            display_body_panel(egui_context.ctx_mut(), state.as_mut(), &mut name, &mut pos, &mut vel, &mut mass, &mut diameter, &mut rotation_speed, &mut rotation, &mut model_path, &mut scene, &mut horizons_id, &mut commands, &systems, &assets, light, scene_query, billboard_material.as_mut(), &mut materials, &mut apply, &scale);
+            display_body_panel(
+                egui_context.ctx_mut(),
+                state.as_mut(),
+                &mut name,
+                &mut pos,
+                &mut vel,
+                &mut mass,
+                &mut diameter,
+                &mut rotation_speed,
+                &mut rotation,
+                &mut model_path,
+                &mut scene,
+                &mut horizons_id,
+                &mut commands,
+                &systems,
+                &assets,
+                light,
+                scene_query,
+                billboard_material.as_mut(),
+                &mut materials,
+                &mut apply,
+                &scale,
+            );
         }
     } else {
         state.entity = None;
@@ -128,13 +203,13 @@ fn initialize_state(
             intensity: source.intensity,
             enabled: source.enabled,
             range: source.range,
-            imposter_color: source.imposter_color
+            imposter_color: source.imposter_color,
         }),
         ephemeris_id: anise_metadata.ephemeris_id,
         ellipsoid: diameter.ellipsoid,
         orientation_id: anise_metadata.orientation_id,
         rotation_matrix: rotation.matrix,
-        target_id: anise_metadata.target_id
+        target_id: anise_metadata.target_id,
     };
 }
 
@@ -164,14 +239,34 @@ fn display_body_panel(
     egui::SidePanel::right("body_panel")
         .resizable(true)
         .show(ctx, |ui| {
-            ScrollArea::vertical()
-                .auto_shrink(true)
-                .show(ui, |ui| {
-                    ui.heading("Body");
-                    display_body_properties(ui, state);
-                    display_light_source(ui, state);
-                    display_bottom_buttons(ui, state, name, pos, vel, mass, diameter, rotation_speed, tilt, model_path, scene, horizons, commands, systems, assets, light, scene_query, billboard_material, materials, apply, scale);
-                });
+            ScrollArea::vertical().auto_shrink(true).show(ui, |ui| {
+                ui.heading("Body");
+                display_body_properties(ui, state);
+                display_light_source(ui, state);
+                display_bottom_buttons(
+                    ui,
+                    state,
+                    name,
+                    pos,
+                    vel,
+                    mass,
+                    diameter,
+                    rotation_speed,
+                    tilt,
+                    model_path,
+                    scene,
+                    horizons,
+                    commands,
+                    systems,
+                    assets,
+                    light,
+                    scene_query,
+                    billboard_material,
+                    materials,
+                    apply,
+                    scale,
+                );
+            });
         });
 }
 
@@ -217,11 +312,15 @@ fn ellipsoid(ui: &mut egui::Ui, state: &mut EditorPanelState) {
         });
         ui.horizontal(|ui| {
             ui.label("Semi major equatorial radius (km)");
-            ui.add(egui::DragValue::new(&mut state.ellipsoid.semi_major_equatorial_radius_km));
+            ui.add(egui::DragValue::new(
+                &mut state.ellipsoid.semi_major_equatorial_radius_km,
+            ));
         });
         ui.horizontal(|ui| {
             ui.label("Semi minor equatorial radius (km)");
-            ui.add(egui::DragValue::new(&mut state.ellipsoid.semi_minor_equatorial_radius_km));
+            ui.add(egui::DragValue::new(
+                &mut state.ellipsoid.semi_minor_equatorial_radius_km,
+            ));
         });
     });
 }
@@ -283,13 +382,17 @@ fn display_light_source(ui: &mut egui::Ui, state: &mut EditorPanelState) {
         });
         ui.checkbox(&mut light.enabled, "Enabled");
     } else {
-        if ui.button("Add Light Source").on_hover_text("Add a light source to the body").clicked() {
+        if ui
+            .button("Add Light Source")
+            .on_hover_text("Add a light source to the body")
+            .clicked()
+        {
             state.new_light_settings = Some(LightSettings {
                 color: Color::WHITE,
                 intensity: 100.0,
                 range: 100.0,
                 enabled: true,
-                imposter_color: Color::WHITE
+                imposter_color: Color::WHITE,
             });
         }
     }
@@ -321,15 +424,43 @@ fn display_bottom_buttons(
     ui.with_layout(Layout::bottom_up(Align::Center), |ui| {
         ui.horizontal(|ui| {
             if ui.button("Apply").on_hover_text("Apply changes").clicked() {
-                apply_changes(state, name, pos, vel, mass, diameter, rotation_speed, tilt, model_path, scene, horizons, commands, systems, assets, light, scene_query, billboard_material, materials, scale);
+                apply_changes(
+                    state,
+                    name,
+                    pos,
+                    vel,
+                    mass,
+                    diameter,
+                    rotation_speed,
+                    tilt,
+                    model_path,
+                    scene,
+                    horizons,
+                    commands,
+                    systems,
+                    assets,
+                    light,
+                    scene_query,
+                    billboard_material,
+                    materials,
+                    scale,
+                );
                 *apply = true;
             }
-            if ui.button("Reset").on_hover_text("Reset to original values").clicked() {
+            if ui
+                .button("Reset")
+                .on_hover_text("Reset to original values")
+                .clicked()
+            {
                 // Reset logic here
             }
             if state.show_delete_confirm {
                 ui.label("Are you sure?");
-                if ui.button("Yes").on_hover_text("Delete selected body").clicked() {
+                if ui
+                    .button("Yes")
+                    .on_hover_text("Delete selected body")
+                    .clicked()
+                {
                     commands.entity(state.entity.unwrap()).despawn();
                     state.show_delete_confirm = false;
                 }
@@ -337,13 +468,21 @@ fn display_bottom_buttons(
                     state.show_delete_confirm = false;
                 }
             } else {
-                if ui.button("Delete").on_hover_text("Delete selected body").clicked() {
+                if ui
+                    .button("Delete")
+                    .on_hover_text("Delete selected body")
+                    .clicked()
+                {
                     state.show_delete_confirm = true;
                 }
             }
         });
         ui.separator();
-        if ui.button("Load starting data from included SPK kernels").on_hover_text("Use starting data from ANISE").clicked() {
+        if ui
+            .button("Load starting data from included SPK kernels")
+            .on_hover_text("Use starting data from ANISE")
+            .clicked()
+        {
             commands.run_system(systems.0[EditorSystemType::RETRIEVE_DATA]);
         }
     });
@@ -402,21 +541,24 @@ fn apply_changes(
             Visibility::Hidden
         };
     } else if let Some(light) = state.new_light_settings.as_ref() {
-        commands.entity(state.entity.unwrap()).with_children(|parent| {
-            parent.spawn(LightSource::new_settings(state.entity.unwrap(), light))
-                .insert(PointLight {
-                    color: light.color,
-                    intensity: scale_lumen(light.intensity, scale),
-                    range: scale.m_to_unit_32(light.range),
-                    radius: shape.ellipsoid.mean_equatorial_radius_km() as f32,
-                    ..default()
-                })
-                .insert(if light.enabled {
-                    Visibility::Visible
-                } else {
-                    Visibility::Hidden
-                });
-        });
+        commands
+            .entity(state.entity.unwrap())
+            .with_children(|parent| {
+                parent
+                    .spawn(LightSource::new_settings(state.entity.unwrap(), light))
+                    .insert(PointLight {
+                        color: light.color,
+                        intensity: scale_lumen(light.intensity, scale),
+                        range: scale.m_to_unit_32(light.range),
+                        radius: shape.ellipsoid.mean_equatorial_radius_km() as f32,
+                        ..default()
+                    })
+                    .insert(if light.enabled {
+                        Visibility::Visible
+                    } else {
+                        Visibility::Hidden
+                    });
+            });
     }
     if model_path.cleaned() != state.new_model_path {
         *model_path = ModelPath::from_cleaned(state.new_model_path.as_str());
@@ -424,13 +566,11 @@ fn apply_changes(
         let asset_handle: Handle<Scene> = assets.load(model_path.clone().0);
         commands.entity(scene_query.get(scene.1).unwrap()).despawn();
         scene.0 = asset_handle.clone();
-        commands.entity(state.entity.unwrap()).with_children(|parent| {
-            scene.1 = spawn_scene(
-                asset_handle,
-                state.new_name.as_str(),
-                parent
-            );
-        });
+        commands
+            .entity(state.entity.unwrap())
+            .with_children(|parent| {
+                scene.1 = spawn_scene(asset_handle, state.new_name.as_str(), parent);
+            });
     }
     commands.run_system(systems.0[EditorSystemType::UPDATE_POSITIONS]);
     commands.run_system(systems.0[EditorSystemType::UPDATE_DIAMETER]);

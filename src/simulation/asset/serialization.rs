@@ -5,7 +5,8 @@ use bevy::prelude::{Asset, AssetApp, Mat3, Vec3};
 use bevy::{
     asset::{AssetLoader, LoadContext},
     math::DVec3,
-    prelude::Plugin, reflect::TypePath,
+    prelude::Plugin,
+    reflect::TypePath,
 };
 use serde::{Deserialize, Serialize};
 
@@ -24,74 +25,61 @@ pub struct SimulationData {
 #[derive(Debug, Deserialize, Serialize, TypePath, Clone)]
 pub struct SerializedBody {
     pub children: Vec<SerializedBody>,
-    pub data: SerializedBodyData
+    pub data: SerializedBodyData,
 }
 
-pub struct SerializedSpacecraftData {
-
-}
+pub struct SerializedSpacecraftData {}
 
 #[derive(Debug, Deserialize, Serialize, TypePath, Clone, Copy)]
 pub struct SerializedVec {
     pub x: f64,
     pub y: f64,
-    pub z: f64
+    pub z: f64,
 }
 
 #[derive(Debug, Deserialize, Serialize, TypePath, Clone, Copy)]
 pub struct SerializedMat3 {
     pub x: SerializedVec,
     pub y: SerializedVec,
-    pub z: SerializedVec
+    pub z: SerializedVec,
 }
 
 impl From<Mat3> for SerializedMat3 {
-
     fn from(value: Mat3) -> Self {
         SerializedMat3 {
             x: SerializedVec::from(value.x_axis.as_dvec3()),
             y: SerializedVec::from(value.y_axis.as_dvec3()),
-            z: SerializedVec::from(value.z_axis.as_dvec3())
+            z: SerializedVec::from(value.z_axis.as_dvec3()),
         }
     }
-
 }
 
 impl From<SerializedMat3> for Mat3 {
-
     fn from(value: SerializedMat3) -> Self {
         Mat3::from_cols(value.x.into(), value.y.into(), value.z.into())
     }
-
 }
 
 impl From<SerializedVec> for DVec3 {
-    
     fn from(value: SerializedVec) -> Self {
         DVec3::new(value.x, value.y, value.z)
     }
-    
 }
 
 impl From<SerializedVec> for Vec3 {
-
     fn from(value: SerializedVec) -> Self {
         DVec3::new(value.x, value.y, value.z).as_vec3()
     }
-
 }
 
-
 impl From<DVec3> for SerializedVec {
-
     fn from(value: DVec3) -> Self {
         SerializedVec {
             x: value.x,
             y: value.y,
-            z: value.z
+            z: value.z,
         }
     }
-
 }
 
 #[derive(Debug, Serialize, Deserialize, TypePath, Clone)]
@@ -111,13 +99,13 @@ pub struct SerializedBodyData {
     pub ellipsoid: Ellipsoid,
     pub light_source: Option<SerializedLightSource>,
     #[serde(default = "default_rot_matrix")]
-    pub rotation_matrix: SerializedMat3
+    pub rotation_matrix: SerializedMat3,
 }
 
 #[derive(Debug, Serialize, Deserialize, TypePath, Clone)]
 pub struct SerializedFixedBodyFrame {
     pub target_id: i32,
-    pub orientation_id: i32
+    pub orientation_id: i32,
 }
 
 #[derive(Debug, Serialize, Deserialize, TypePath, Clone)]
@@ -127,7 +115,7 @@ pub struct SerializedLightSource {
     pub color: String,
     #[serde(default = "default_color")]
     pub imposter_color: String,
-    pub enabled: bool
+    pub enabled: bool,
 }
 
 #[derive(Default)]
@@ -146,7 +134,8 @@ impl AssetLoader for BodyAssetLoader {
     ) -> Result<Self::Asset, Self::Error> {
         let mut bytes = Vec::new();
         reader.read_to_end(&mut bytes).await.unwrap();
-        let custom_asset = serde_json::from_str::<SimulationData>(std::str::from_utf8(&*bytes).unwrap())?;
+        let custom_asset =
+            serde_json::from_str::<SimulationData>(std::str::from_utf8(&*bytes).unwrap())?;
         Ok(custom_asset)
     }
 
@@ -158,11 +147,8 @@ impl AssetLoader for BodyAssetLoader {
 pub struct SerializationPlugin;
 
 impl Plugin for SerializationPlugin {
-
     fn build(&self, app: &mut bevy::prelude::App) {
-        app
-            .init_asset_loader::<BodyAssetLoader>()
+        app.init_asset_loader::<BodyAssetLoader>()
             .init_asset::<SimulationData>();
     }
-
 }

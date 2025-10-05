@@ -1,15 +1,15 @@
 mod bottom_bar;
-pub mod system_panel;
-pub mod editor_body_panel;
-pub mod debug_window;
 pub mod components;
+pub mod debug_window;
+pub mod editor_body_panel;
+pub mod editor_bottom_bar;
+pub mod menu;
+pub mod metadata;
 pub mod scenario_selection;
 mod sim_body_panel;
 pub mod sim_bottom_bar;
-pub mod editor_bottom_bar;
+pub mod system_panel;
 pub mod toast;
-pub mod metadata;
-pub mod menu;
 
 //use crate::fps::Fps;
 //use crate::fps::Fps;
@@ -36,10 +36,7 @@ use crate::utils::{sim_state_type_editor, sim_state_type_simulation};
 use bevy::prelude::in_state;
 use bevy::utils::default;
 use bevy::{
-    prelude::{
-        App,
-        IntoScheduleConfigs, Plugin, Resource,
-    },
+    prelude::{App, IntoScheduleConfigs, Plugin, Resource},
     reflect::Reflect,
 };
 use bevy_egui::EguiContextPass;
@@ -56,7 +53,7 @@ pub struct Light {
 pub enum StepType {
     #[default]
     SUBSTEPS,
-    TIMESTEPS    
+    TIMESTEPS,
 }
 
 #[derive(Resource, Reflect, Default)]
@@ -76,26 +73,34 @@ pub struct InterfacePlugin;
 
 impl Plugin for InterfacePlugin {
     fn build(&self, app: &mut App) {
-        app
-            .insert_resource(UiState {
-                visible: true,
-                dyn_hide_orbit_lines: true,
-                ..default()
-            })
-            .init_resource::<EditorPanelState>()
-            .register_type::<SimTime>()
-            .init_resource::<SimTime>()
-            .add_plugins(DebugPlugin)
-            .add_plugins(ScenarioSelectionPlugin)
-            .add_plugins(ToastPlugin)
-            .add_plugins(MetadataPlugin)
-            .add_systems(
-                EguiContextPass,
+        app.insert_resource(UiState {
+            visible: true,
+            dyn_hide_orbit_lines: true,
+            ..default()
+        })
+        .init_resource::<EditorPanelState>()
+        .register_type::<SimTime>()
+        .init_resource::<SimTime>()
+        .add_plugins(DebugPlugin)
+        .add_plugins(ScenarioSelectionPlugin)
+        .add_plugins(ToastPlugin)
+        .add_plugins(MetadataPlugin)
+        .add_systems(
+            EguiContextPass,
+            (
+                system_panel.run_if(in_state(SimState::Loaded)),
                 (
-                    system_panel.run_if(in_state(SimState::Loaded)),
-                    (editor_body_panel.run_if(sim_state_type_editor), sim_body_panel.run_if(sim_state_type_simulation).after(SimulationStep)),
-                    (simulation_bottom_bar.run_if(sim_state_type_simulation), editor_bottom_bar.run_if(sim_state_type_editor))
-                ).chain()
-            );
+                    editor_body_panel.run_if(sim_state_type_editor),
+                    sim_body_panel
+                        .run_if(sim_state_type_simulation)
+                        .after(SimulationStep),
+                ),
+                (
+                    simulation_bottom_bar.run_if(sim_state_type_simulation),
+                    editor_bottom_bar.run_if(sim_state_type_editor),
+                ),
+            )
+                .chain(),
+        );
     }
 }

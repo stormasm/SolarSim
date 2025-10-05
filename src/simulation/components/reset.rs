@@ -10,20 +10,20 @@ use crate::simulation::ui::scenario_selection::SelectedScenario;
 use crate::simulation::ui::{SimTime, StepType, UiState};
 use crate::simulation::SimState;
 use anise::prelude::Almanac;
-use bevy::prelude::{App, Camera, Commands, Entity, NextState, OnEnter, OnExit, Plugin, Query, Res, ResMut, Vec3, With, Without};
+use bevy::prelude::{
+    App, Camera, Commands, Entity, NextState, OnEnter, OnExit, Plugin, Query, Res, ResMut, Vec3,
+    With, Without,
+};
 use bevy_panorbit_camera::PanOrbitCamera;
 
 pub struct ResetPlugin;
 
 impl Plugin for ResetPlugin {
-    
     fn build(&self, app: &mut App) {
-        app
-        .add_systems(OnExit(SimState::Loaded), clean_up)
-        .add_systems(OnEnter(SimState::ExitToMainMenu), switch_to_menu)
-        .add_systems(OnEnter(SimState::Reset), reset);
+        app.add_systems(OnExit(SimState::Loaded), clean_up)
+            .add_systems(OnEnter(SimState::ExitToMainMenu), switch_to_menu)
+            .add_systems(OnEnter(SimState::Reset), reset);
     }
-    
 }
 
 fn clean_up(
@@ -39,7 +39,7 @@ fn clean_up(
     mut camera: Query<&mut PanOrbitCamera>,
     mut ui_state: ResMut<UiState>,
     scenario_data: Res<ScenarioData>,
-    mut almanac_holder: ResMut<AlmanacHolder>
+    mut almanac_holder: ResMut<AlmanacHolder>,
 ) {
     for entity in m_entities.iter() {
         commands.entity(entity).despawn()
@@ -59,14 +59,10 @@ fn clean_up(
     ui_state.show_debug = false;
 }
 
-fn switch_to_menu(
-    mut state: ResMut<NextState<SimState>>
-) {
+fn switch_to_menu(mut state: ResMut<NextState<SimState>>) {
     let _ = state.set(SimState::Menu);
 }
 
-fn reset(
-    mut state: ResMut<NextState<SimState>>
-) {
+fn reset(mut state: ResMut<NextState<SimState>>) {
     let _ = state.set(SimState::Loading);
 }

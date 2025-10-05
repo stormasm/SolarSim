@@ -2,46 +2,60 @@ use crate::simulation::components::body::{BodyChildren, Moon, Planet, SimPositio
 use crate::simulation::integration::{paused, SimulationStep};
 use crate::utils::sim_state_type_simulation;
 use bevy::prelude::{not, Transform};
-use bevy::{math::DVec3, prelude::{App, Component, Entity, IntoScheduleConfigs, Plugin, Query, Reflect, Update, With, Without}};
+use bevy::{
+    math::DVec3,
+    prelude::{
+        App, Component, Entity, IntoScheduleConfigs, Plugin, Query, Reflect, Update, With, Without,
+    },
+};
 
 pub struct ApsisPlugin;
 
 impl Plugin for ApsisPlugin {
-
     fn build(&self, app: &mut App) {
-        app
-            .register_type::<Apsis>()
-            .add_systems(Update, (update_apsis.after(SimulationStep)).run_if(sim_state_type_simulation).run_if(not(paused)));
+        app.register_type::<Apsis>().add_systems(
+            Update,
+            (update_apsis.after(SimulationStep))
+                .run_if(sim_state_type_simulation)
+                .run_if(not(paused)),
+        );
     }
-
 }
 
 #[derive(Debug, Clone, Copy, Reflect, Default)]
 pub struct Apsis {
-
     pub position: DVec3,
-    pub distance: f32
-
+    pub distance: f32,
 }
 
 #[derive(Component, Debug, Clone, Copy, Reflect, Default)]
 pub struct ApsisBody {
-
     pub aphelion: Apsis,
     pub perihelion: Apsis,
-
 }
 
 #[derive(Debug, Clone, Copy, Reflect)]
 pub enum ApsisType {
     Aphelion,
-    Perihelion
+    Perihelion,
 }
 
 fn update_apsis(
     stars: Query<(&SimPosition, &BodyChildren), (With<Star>, Without<Moon>, Without<Planet>)>,
-    mut planets: Query<(Entity, &SimPosition, &Transform, &mut ApsisBody, &BodyChildren), (With<Planet>, Without<Star>, Without<Moon>)>,
-    mut moons: Query<(Entity, &SimPosition, &Transform, &mut ApsisBody), (With<Moon>, Without<Star>, Without<Planet>)>,
+    mut planets: Query<
+        (
+            Entity,
+            &SimPosition,
+            &Transform,
+            &mut ApsisBody,
+            &BodyChildren,
+        ),
+        (With<Planet>, Without<Star>, Without<Moon>),
+    >,
+    mut moons: Query<
+        (Entity, &SimPosition, &Transform, &mut ApsisBody),
+        (With<Moon>, Without<Star>, Without<Planet>),
+    >,
 ) {
     for (entity, position, _, mut apsis, _) in &mut planets {
         let mut parent = None;

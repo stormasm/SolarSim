@@ -6,13 +6,10 @@ use egui_toast::{Toast, ToastKind, ToastOptions, Toasts};
 pub struct ToastPlugin;
 
 impl Plugin for ToastPlugin {
-
     fn build(&self, app: &mut App) {
-        app
-            .init_resource::<ToastContainer>()
+        app.init_resource::<ToastContainer>()
             .add_systems(EguiContextPass, show_toasts);
     }
-
 }
 
 #[derive(Resource)]
@@ -24,10 +21,7 @@ impl Default for ToastContainer {
     }
 }
 
-fn show_toasts(
-    mut egui_context: EguiContexts,
-    mut toasts: ResMut<ToastContainer>
-) {
+fn show_toasts(mut egui_context: EguiContexts, mut toasts: ResMut<ToastContainer>) {
     toasts.0.show(egui_context.ctx_mut());
 }
 
@@ -35,8 +29,7 @@ pub fn success_toast(text: &str) -> Toast {
     Toast {
         text: text.into(),
         kind: ToastKind::Success,
-        options: ToastOptions::default()
-            .duration_in_seconds(3.0),
+        options: ToastOptions::default().duration_in_seconds(3.0),
         ..default()
     }
 }
@@ -45,8 +38,7 @@ pub fn error_toast(text: &str) -> Toast {
     Toast {
         text: text.into(),
         kind: ToastKind::Error,
-        options: ToastOptions::default()
-            .duration_in_seconds(3.0),
+        options: ToastOptions::default().duration_in_seconds(3.0),
         ..default()
     }
 }
@@ -55,8 +47,7 @@ pub fn important_error_toast(text: &str) -> Toast {
     Toast {
         text: text.into(),
         kind: ToastKind::Error,
-        options: ToastOptions::default()
-            .duration_in_seconds(5.0),
+        options: ToastOptions::default().duration_in_seconds(5.0),
         ..default()
     }
 }

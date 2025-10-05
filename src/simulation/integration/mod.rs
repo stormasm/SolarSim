@@ -1,5 +1,7 @@
 use crate::constants::DEFAULT_SUB_STEPS;
-use crate::simulation::components::body::{Acceleration, Mass, OrbitSettings, SimPosition, Velocity};
+use crate::simulation::components::body::{
+    Acceleration, Mass, OrbitSettings, SimPosition, Velocity,
+};
 use crate::simulation::components::motion_line::OrbitOffset;
 use crate::simulation::components::scale::SimulationScale;
 use crate::simulation::components::selection::SelectedEntity;
@@ -9,7 +11,10 @@ use crate::utils::sim_state_type_simulation;
 use bevy::app::App;
 use bevy::diagnostic::{Diagnostic, DiagnosticPath, RegisterDiagnostic};
 use bevy::math::{DVec3, Vec3};
-use bevy::prelude::{not, AppExtStates, Entity, IntoScheduleConfigs, Plugin, Query, Res, ResMut, Resource, States, SystemSet, Transform, Update};
+use bevy::prelude::{
+    not, AppExtStates, Entity, IntoScheduleConfigs, Plugin, Query, Res, ResMut, Resource, States,
+    SystemSet, Transform, Update,
+};
 
 mod euler;
 mod verlet;
@@ -25,22 +30,20 @@ pub const NBODY_STEPS: DiagnosticPath = DiagnosticPath::const_new("nbody_steps")
 pub enum IntegrationType {
     #[default]
     Verlet,
-    Euler
+    Euler,
 }
 
 impl IntegrationType {
-
     pub fn as_str(&self) -> String {
         match self {
             IntegrationType::Verlet => "Verlet".to_string(),
-            IntegrationType::Euler => "Euler".to_string()
+            IntegrationType::Euler => "Euler".to_string(),
         }
     }
 
     pub fn all() -> Vec<IntegrationType> {
         vec![IntegrationType::Verlet, IntegrationType::Euler]
     }
-
 }
 
 #[derive(Resource, Default)]
@@ -56,7 +59,6 @@ impl Default for SubSteps {
 }
 
 impl SubSteps {
-
     pub fn small_step_up(&mut self) {
         self.0 *= 2;
     }
@@ -72,15 +74,13 @@ impl SubSteps {
     pub fn big_step_down(&mut self) {
         self.0 = std::cmp::max(self.0 / 10, 1);
     }
-
 }
 
 pub struct IntegrationPlugin;
 
 impl Plugin for IntegrationPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .init_state::<IntegrationType>()
+        app.init_state::<IntegrationType>()
             .init_resource::<Pause>()
             .init_resource::<SubSteps>()
             .register_type::<Velocity>()
@@ -92,8 +92,20 @@ impl Plugin for IntegrationPlugin {
             .register_diagnostic(Diagnostic::new(NBODY_STEP_TIME).with_max_history_length(50))
             .register_diagnostic(Diagnostic::new(NBODY_TOTAL_TIME).with_max_history_length(50))
             .register_diagnostic(Diagnostic::new(NBODY_STEPS).with_max_history_length(50))
-            .add_systems(Update, (change_selection_without_update).in_set(SimulationStep).run_if(sim_state_type_simulation).run_if(paused))
-            .add_systems(Update, (update_positions_after_pos_update).in_set(SimulationStep).run_if(sim_state_type_simulation).run_if(not(paused)));
+            .add_systems(
+                Update,
+                (change_selection_without_update)
+                    .in_set(SimulationStep)
+                    .run_if(sim_state_type_simulation)
+                    .run_if(paused),
+            )
+            .add_systems(
+                Update,
+                (update_positions_after_pos_update)
+                    .in_set(SimulationStep)
+                    .run_if(sim_state_type_simulation)
+                    .run_if(not(paused)),
+            );
     }
 }
 
@@ -103,7 +115,8 @@ fn change_selection_without_update(
     mut orbit_offset: ResMut<OrbitOffset>,
     scale: Res<SimulationScale>,
 ) {
-    let offset = match selected_entity.entity { //if orbit_offset.enabled is true, we calculate the new position of the selected entity first and then move it to 0,0,0 and add the actual position to all other bodies
+    let offset = match selected_entity.entity {
+        //if orbit_offset.enabled is true, we calculate the new position of the selected entity first and then move it to 0,0,0 and add the actual position to all other bodies
         Some(selected) => {
             if let Ok((_, sim_pos, mut transform)) = query.get_mut(selected) {
                 let raw_translation = scale.m_to_unit_dvec(sim_pos.current);
@@ -131,14 +144,25 @@ fn change_selection_without_update(
 }
 
 fn update_positions_after_pos_update(
-    mut query: Query<(Entity, &Mass, &mut Acceleration, &mut OrbitSettings, &mut Velocity, &mut SimPosition, &mut Transform)>,
+    mut query: Query<(
+        Entity,
+        &Mass,
+        &mut Acceleration,
+        &mut OrbitSettings,
+        &mut Velocity,
+        &mut SimPosition,
+        &mut Transform,
+    )>,
     mut orbit_offset: ResMut<OrbitOffset>,
     selected_entity: Res<SelectedEntity>,
-    scale: Res<SimulationScale>
+    scale: Res<SimulationScale>,
 ) {
-    let offset = match selected_entity.entity { //if orbit_offset.enabled is true, we calculate the new position of the selected entity first and then move it to 0,0,0 and add the actual position to all other bodies
+    let offset = match selected_entity.entity {
+        //if orbit_offset.enabled is true, we calculate the new position of the selected entity first and then move it to 0,0,0 and add the actual position to all other bodies
         Some(selected) => {
-            if let Ok((_, mass, acc, mut orbit_s, vel, sim_pos, mut transform)) = query.get_mut(selected) {
+            if let Ok((_, mass, acc, mut orbit_s, vel, sim_pos, mut transform)) =
+                query.get_mut(selected)
+            {
                 if orbit_s.display_force {
                     orbit_s.force_direction = acc.0.normalize();
                 }
@@ -149,7 +173,7 @@ fn update_positions_after_pos_update(
                 DVec3::ZERO
             }
         }
-        None => DVec3::ZERO
+        None => DVec3::ZERO,
     };
     for (entity, _, acc, mut orbit_s, vel, sim_pos, mut transform) in query.iter_mut() {
         if let Some(s_entity) = selected_entity.entity {
@@ -166,9 +190,6 @@ fn update_positions_after_pos_update(
     orbit_offset.value = offset.as_vec3();
 }
 
-pub fn paused(
-    res: Res<Pause>
-) -> bool {
+pub fn paused(res: Res<Pause>) -> bool {
     res.0
 }
-

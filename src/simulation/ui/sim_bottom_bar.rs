@@ -24,7 +24,7 @@ pub fn simulation_bottom_bar(
     mut sub_steps: ResMut<SubSteps>,
     mut ui_state: ResMut<UiState>,
     diagnostics: Res<DiagnosticsStore>,
-    sim_type: Res<SimStateType>
+    sim_type: Res<SimStateType>,
 ) {
     if !ui_state.visible || windows.is_empty() || egui_context.try_ctx_mut().is_none() {
         return;
@@ -42,7 +42,7 @@ pub fn simulation_bottom_bar(
                     ui.horizontal_centered(|ui| {
                         let mut timestep_selected = match ui_state.step_type {
                             StepType::SUBSTEPS => false,
-                            StepType::TIMESTEPS => true
+                            StepType::TIMESTEPS => true,
                         };
                         if ui.small_button("<<").clicked() {
                             if timestep_selected {
@@ -83,7 +83,10 @@ pub fn simulation_bottom_bar(
                         }
                         //       ui.add_space(20.0);
 
-                        if ui.toggle_value(&mut !timestep_selected, "Substeps per frame").clicked() {
+                        if ui
+                            .toggle_value(&mut !timestep_selected, "Substeps per frame")
+                            .clicked()
+                        {
                             timestep_selected = false;
                         }
                         let mut new_sub_steps = sub_steps.0.to_string();
@@ -96,7 +99,10 @@ pub fn simulation_bottom_bar(
                             }
                         }
                         //     ui.add_space(20.0);
-                        if ui.toggle_value(&mut timestep_selected, "Timestep in seconds").clicked() {
+                        if ui
+                            .toggle_value(&mut timestep_selected, "Timestep in seconds")
+                            .clicked()
+                        {
                             timestep_selected = true;
                         }
                         let mut new_speed = speed.0.to_string();

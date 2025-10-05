@@ -9,18 +9,21 @@ use bevy::app::{App, Plugin};
 use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
 use bevy::prelude::{in_state, IntoScheduleConfigs, Query, Res, ResMut};
 use bevy_egui::egui::RichText;
-use bevy_egui::{egui::{self}, EguiContextPass, EguiContexts};
+use bevy_egui::{
+    egui::{self},
+    EguiContextPass, EguiContexts,
+};
 use bevy_panorbit_camera::PanOrbitCamera;
 
 pub struct DebugPlugin;
 
 impl Plugin for DebugPlugin {
-
     fn build(&self, app: &mut App) {
-        app
-            .add_systems(EguiContextPass, (debug_window.after(system_panel)).run_if(in_state(SimState::Loaded)));
+        app.add_systems(
+            EguiContextPass,
+            (debug_window.after(system_panel)).run_if(in_state(SimState::Loaded)),
+        );
     }
-
 }
 
 fn debug_window(
@@ -28,7 +31,7 @@ fn debug_window(
     mut ui_state: ResMut<UiState>,
     diagnostics: Res<DiagnosticsStore>,
     bodies: Query<&Mass>,
-    camera: Query<&PanOrbitCamera>
+    camera: Query<&PanOrbitCamera>,
 ) {
     if !ui_state.visible || egui_ctx.try_ctx_mut().is_none() {
         return;
@@ -45,14 +48,14 @@ fn debug_window(
                 if let Some(value) = fps.smoothed() {
                     // Update the value of the second section
                     ui.horizontal(|ui| {
-                        ui.label(RichText::new("FPS: ").strong());                            
+                        ui.label(RichText::new("FPS: ").strong());
                         ui.label(format!("{:.0}", value));
                     });
                 }
                 if let Some(value) = fps.average() {
                     // Update the value of the second section
                     ui.horizontal(|ui| {
-                        ui.label(RichText::new("Avg. FPS: ").strong());                            
+                        ui.label(RichText::new("Avg. FPS: ").strong());
                         ui.label(format!("{:.0}", value));
                     });
                 }
@@ -61,7 +64,7 @@ fn debug_window(
                 if let Some(value) = frametime.smoothed() {
                     // Update the value of the second section
                     ui.horizontal(|ui| {
-                        ui.label(RichText::new("Frametime: ").strong());                            
+                        ui.label(RichText::new("Frametime: ").strong());
                         ui.label(format!("{:.0}", value));
                     });
                 }
@@ -70,21 +73,21 @@ fn debug_window(
                 if let Some(value) = frametime.value() {
                     // Update the value of the second section
                     ui.horizontal(|ui| {
-                        ui.label(RichText::new("Framecount: ").strong());                            
+                        ui.label(RichText::new("Framecount: ").strong());
                         ui.label(format!("{:.0}", value));
                     });
                 }
             }
             let body_count = bodies.iter().count();
             ui.horizontal(|ui| {
-                ui.label(RichText::new("Total amount of bodies: ").strong());                            
+                ui.label(RichText::new("Total amount of bodies: ").strong());
                 ui.label(format!("{:?}", body_count));
             });
             if let Some(frametime) = diagnostics.get(&NBODY_STEPS) {
                 if let Some(value) = frametime.smoothed() {
                     // Update the value of the second section
                     ui.horizontal(|ui| {
-                        ui.label(RichText::new("N-Body steps / s: ").strong());                            
+                        ui.label(RichText::new("N-Body steps / s: ").strong());
                         ui.label(format!("{:.0}", value));
                     });
                 }
@@ -93,7 +96,7 @@ fn debug_window(
                 if let Some(value) = frametime.average() {
                     // Update the value of the second section
                     ui.horizontal(|ui| {
-                        ui.label(RichText::new("N-Body step calculation time: ").strong());                            
+                        ui.label(RichText::new("N-Body step calculation time: ").strong());
                         ui.label(format!("{:?}", Duration::from_nanos(value as u64)));
                     });
                 }
@@ -102,17 +105,17 @@ fn debug_window(
                 if let Some(value) = frametime.average() {
                     // Update the value of the second section
                     ui.horizontal(|ui| {
-                        ui.label(RichText::new("N-Body total calculation time: ").strong());                            
+                        ui.label(RichText::new("N-Body total calculation time: ").strong());
                         ui.label(format!("{:?}", Duration::from_nanos(value as u64)));
                     });
                 }
             }
             ui.horizontal(|ui| {
-                ui.label(RichText::new("Camera focus: ").strong());                            
+                ui.label(RichText::new("Camera focus: ").strong());
                 ui.label(format!("{}", cam.focus));
             });
             ui.horizontal(|ui| {
-                ui.label(RichText::new("Camera radius: ").strong());                            
+                ui.label(RichText::new("Camera radius: ").strong());
                 ui.label(format!("{}", cam.radius.unwrap_or(0.)));
             });
             ui.allocate_space(egui::vec2(ui.available_size().x, 0.0));
