@@ -5,11 +5,11 @@ pub fn scale_lumen(lumen: f32, scale: &SimulationScale) -> f32 {
     scale.squared().0 * lumen
 }
 
-pub fn unscale_lumen(lumen: f32, scale: &SimulationScale) -> f32 {
+pub fn _unscale_lumen(lumen: f32, scale: &SimulationScale) -> f32 {
     lumen / scale.squared().0
 }
 
-pub fn scale_lumen_64(lumen: f64, scale: &SimulationScale) -> f64 {
+pub fn _scale_lumen_64(lumen: f64, scale: &SimulationScale) -> f64 {
     scale.squared().0 as f64 * lumen
 }
 
@@ -21,18 +21,18 @@ pub fn m_to_km_dvec(m: DVec3) -> DVec3 {
     m / 1000.0
 }
 
-pub fn km_to_m_f64(km: f64) -> f64 {
+pub fn _km_to_m_f64(km: f64) -> f64 {
     km * 1000.0
 }
 
-pub fn m_to_km_f64(m: f64) -> f64 {
+pub fn _m_to_km_f64(m: f64) -> f64 {
     m / 1000.0
 }
 
-pub fn km_to_m(km: f32) -> f32 {
+pub fn _km_to_m(km: f32) -> f32 {
     km * 1000.0
 }
 
-pub fn m_to_km(m: f32) -> f32 {
+pub fn _m_to_km(m: f32) -> f32 {
     m / 1000.0
 }
