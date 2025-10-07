@@ -23,8 +23,8 @@ use std::fs;
 pub struct SaveScenarioPlugin;
 
 impl Plugin for SaveScenarioPlugin {
-    fn build(&self, app: &mut bevy::prelude::App) {
-        app;
+    fn build(&self, _app: &mut bevy::prelude::App) {
+        //app;
     }
 }
 
