@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 use crate::simulation::asset::serialization::SerializedVec;
 use crate::simulation::components::selection::SelectedEntity;
 use crate::simulation::scenario::setup::ScenarioData;
@@ -20,6 +21,7 @@ impl Plugin for HorizonsPlugin {
 }
 
 #[derive(Resource)]
+#[allow(dead_code)]
 pub struct HorizonsClient(pub Client);
 
 impl Default for HorizonsClient {
@@ -45,14 +47,15 @@ impl Default for AniseMetadata {
         }
     }
 }
-
+#[allow(dead_code)]
 const HORIZONS_API_URL: &'static str = "https://ssd.jpl.nasa.gov/api/horizons.api?format=text";
-
+#[allow(dead_code)]
 pub struct HorizonsApiParameters {
     params: HashMap<String, String>,
 }
 
 impl HorizonsApiParameters {
+    #[allow(dead_code)]
     pub fn with_defaults() -> Self {
         let mut params = HashMap::new();
         params.insert("CENTER".to_string(), "500@0".to_string()); //Solar System Barycenter
@@ -62,30 +65,33 @@ impl HorizonsApiParameters {
         Self { params }
     }
 
+    #[allow(dead_code)]
     pub fn with_command(mut self, command: i32) -> Self {
         self.params
             .insert("COMMAND".to_string(), command.to_string());
         self
     }
 
+    #[allow(dead_code)]
     pub fn with_start_time(mut self, start_time: &str) -> Self {
         self.params
             .insert("START_TIME".to_string(), start_time.to_string());
         self
     }
-
+    #[allow(dead_code)]
     pub fn with_stop_time(mut self, stop_time: &str) -> Self {
         self.params
             .insert("STOP_TIME".to_string(), stop_time.to_string());
         self
     }
-
+    #[allow(dead_code)]
     pub fn with_center(mut self, center: i32) -> Self {
         self.params.insert("CENTER".to_string(), center.to_string());
         self
     }
 }
 
+#[allow(dead_code)]
 pub fn get_starting_data_horizons(
     parameters: HorizonsApiParameters,
     client: Client,
@@ -137,6 +143,7 @@ pub fn get_starting_data_horizons(
     Ok((vec1, vec2))
 }
 
+#[allow(dead_code)]
 pub fn retrieve_starting_data_horizons(
     selected_entity: Res<SelectedEntity>,
     bodies: Query<&AniseMetadata>,
