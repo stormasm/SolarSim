@@ -46,8 +46,8 @@ pub struct SimBodyPanelSet<'w, 's> {
     selected_entity: Res<'w, SelectedEntity>,
     ui_state: ResMut<'w, UiState>,
     s_scale: Res<'w, SimulationScale>,
-    scenario: Res<'w, ScenarioData>,
-    sim_time: Res<'w, SimTime>,
+    _scenario: Res<'w, ScenarioData>,
+    _sim_time: Res<'w, SimTime>,
     toast_container: ResMut<'w, ToastContainer>,
 }
 

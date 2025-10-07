@@ -70,7 +70,7 @@ pub struct SystemPanelSet<'w, 's> {
     cubemap: ResMut<'w, Cubemap>,
     billboard: ResMut<'w, BillboardSettings>,
     ui_state: ResMut<'w, UiState>,
-    orbit_offset: ResMut<'w, OrbitOffset>,
+    _orbit_offset: ResMut<'w, OrbitOffset>,
     keys: Res<'w, ButtonInput<KeyCode>>,
     sim_state_type: Res<'w, SimStateType>,
     create_body_state: ResMut<'w, CreateBodyState>,

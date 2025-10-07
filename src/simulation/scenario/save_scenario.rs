@@ -31,7 +31,7 @@ impl Plugin for SaveScenarioPlugin {
 #[derive(SystemParam)]
 pub struct SystemPanelSet<'w, 's> {
     selected_scenario: ResMut<'w, SelectedScenario>,
-    bodies_asset: ResMut<'w, Assets<SimulationData>>,
+    _bodies_asset: ResMut<'w, Assets<SimulationData>>,
     scenario_data: ResMut<'w, ScenarioData>,
     bodies: Query<
         'w,
