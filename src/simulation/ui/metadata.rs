@@ -35,8 +35,8 @@ pub struct MetadataUiState {
     pub show: bool,
     pub selected_spk_file: String,
     pub new_spk_file: String,
-    pub update_bodies_amount: i32,
-    pub update_bodies_total: i32,
+    pub _update_bodies_amount: i32,
+    pub _update_bodies_total: i32,
 }
 
 fn metadata_editor(
