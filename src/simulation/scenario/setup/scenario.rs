@@ -142,7 +142,7 @@ pub fn recursive_bodies(
             let mut sorted_children = serialized_body.children.iter().collect::<Vec<_>>();
             sort_bodies(
                 &mut sorted_children,
-                -DVec3::from(serialized_body.clone().data.starting_position),
+                -DVec3::from(serialized_body.data.starting_position),
             );
             recursive_bodies(
                 sorted_children,
@@ -173,7 +173,7 @@ pub fn recursive_bodies(
             star_color = Srgba::hex(&source.imposter_color).unwrap().into();
         }
         apply_body(
-            BodyBundle::from_serialized(serialized_body.clone()),
+            BodyBundle::from_serialized(serialized_body),
             CreateBodyType::from_depth(current_depth),
             &assets,
             &mut body,
