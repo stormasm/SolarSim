@@ -20,7 +20,7 @@ impl Default for SimulationScale {
 }
 
 impl SimulationScale {
-    pub fn f64(&self) -> f64 {
+    pub fn _f64(&self) -> f64 {
         self.0 as f64
     }
 
@@ -44,11 +44,11 @@ impl SimulationScale {
         value / self.0
     }
 
-    pub fn m_to_unit_vec(&self, value: Vec3) -> Vec3 {
+    pub fn _m_to_unit_vec(&self, value: Vec3) -> Vec3 {
         value * self.0
     }
 
-    pub fn unit_to_m_vec(&self, value: Vec3) -> Vec3 {
+    pub fn _unit_to_m_vec(&self, value: Vec3) -> Vec3 {
         value / self.0
     }
 
@@ -56,7 +56,7 @@ impl SimulationScale {
         value * self.0 as f64
     }
 
-    pub fn unit_to_m_dvec(&self, value: DVec3) -> DVec3 {
+    pub fn _unit_to_m_dvec(&self, value: DVec3) -> DVec3 {
         value / self.0 as f64
     }
 }
