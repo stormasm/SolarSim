@@ -69,6 +69,7 @@ pub fn retrieve_starting_data(
         epoch,
         None,
     );
+    println!("Retrieving data for {}", name);
     if let Ok(s) = state {
         toasts
             .0
@@ -138,9 +139,11 @@ fn spk_file_loading(
     sim_type: Res<SimStateType>,
     selection_state: Res<SelectionState>,
 ) {
+    // println!("spk_file_loading gets printed many times so remove for now...");
     if loading_state.loaded_spice_files || !loading_state.spawned_bodies {
         return;
     }
+    println!("spk_file_loading part II");
     if *sim_type != SimStateType::Editor
         || scenario_data.spice_files.is_empty()
         || (loading_state.spice_loaded > 0
@@ -151,6 +154,7 @@ fn spk_file_loading(
         loading_state.force_reload = false;
         return;
     }
+    println!("spk_file_loading part III");
     if task_pool.is_idle() && loading_state.spice_total == 0 {
         loading_state.spice_total = scenario_data.spice_files.iter().count() as i32;
         almanac.0 = Almanac::default();
@@ -167,6 +171,7 @@ fn spk_file_loading(
             }
         }
     }
+    println!("spk_file_loading part IV");
     for status in task_pool.iter_poll() {
         if let std::task::Poll::Ready(t) = status {
             match t {
@@ -198,6 +203,7 @@ fn spk_file_loading(
 
 async fn load_spk(path: String) -> Result<AlmanacType, Error> {
     let real_path = format!("data/{}", path);
+    println!("loading SPK file: {}", real_path);
     let spk = SPK::load(real_path.as_str()).map_err(|e| Error(format!("{:?}", e)))?;
     Ok(AlmanacType::SPK(spk, path))
 }
